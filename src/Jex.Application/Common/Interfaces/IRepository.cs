@@ -6,7 +6,7 @@ namespace Jex.Application.Common.Interfaces;
 /// <summary>
 /// Generic repository interface for FreeSQL-backed persistence.
 /// </summary>
-public interface IRepository<TEntity> where TEntity : BaseEntity
+public interface IRepository<TEntity> where TEntity : class, IAuditableEntity
 {
     Task<TEntity?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
 

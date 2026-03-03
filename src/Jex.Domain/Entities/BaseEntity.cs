@@ -7,7 +7,7 @@ namespace Jex.Domain.Entities;
 /// Base entity with common audit fields for all domain entities.
 /// ORM mapping is configured via data annotation attributes.
 /// </summary>
-public abstract class BaseEntity
+public abstract class BaseEntity : IAuditableEntity
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

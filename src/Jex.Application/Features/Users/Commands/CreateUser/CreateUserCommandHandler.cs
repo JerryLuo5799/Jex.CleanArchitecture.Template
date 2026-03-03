@@ -1,16 +1,17 @@
 using MediatR;
 using Jex.Application.Common.Exceptions;
 using Jex.Application.Common.Interfaces;
-using Jex.Domain.Entities;
-using Jex.Domain.Enums;
 
 namespace Jex.Application.Features.Users.Commands.CreateUser;
 
 /// <summary>
 /// Handles <see cref="CreateUserCommand"/>.
-/// Validates uniqueness, hashes the password, and persists via the repository.
+/// Delegates user creation (including password hashing) to <see cref="IIdentityService"/>
+/// so that ASP.NET Core Identity manages the credential lifecycle.
 /// </summary>
-public sealed class CreateUserCommandHandler(IUserRepository userRepository)
+public sealed class CreateUserCommandHandler(
+    IUserRepository userRepository,
+    IIdentityService identityService)
     : IRequestHandler<CreateUserCommand, long>
 {
     public async Task<long> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -19,16 +20,16 @@ public sealed class CreateUserCommandHandler(IUserRepository userRepository)
         if (!isEmailUnique)
             throw new ValidationException(nameof(request.Email), "Email address is already in use.");
 
-        var user = new User
-        {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Status = UserStatus.Active
-        };
+        var (userId, succeeded, errors) = await identityService.CreateUserAsync(
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            request.Password,
+            cancellationToken);
 
-        var created = await userRepository.AddAsync(user, cancellationToken);
-        return created.Id;
+        if (!succeeded)
+            throw new ValidationException(nameof(request.Password), string.Join(" ", errors));
+
+        return userId;
     }
 }

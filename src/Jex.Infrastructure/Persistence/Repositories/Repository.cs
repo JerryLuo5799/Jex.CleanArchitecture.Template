@@ -8,7 +8,7 @@ namespace Jex.Infrastructure.Persistence.Repositories;
 /// Generic FreeSQL-backed repository implementation.
 /// </summary>
 public class Repository<TEntity>(IFreeSql freeSql) : IRepository<TEntity>
-    where TEntity : Domain.Entities.BaseEntity
+    where TEntity : class, Domain.Entities.IAuditableEntity
 {
     protected readonly IFreeSql FreeSql = freeSql;
 
