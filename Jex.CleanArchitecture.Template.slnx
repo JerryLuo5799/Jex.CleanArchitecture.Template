@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Jex.Application/Jex.Application.csproj" />
+    <Project Path="src/Jex.Domain/Jex.Domain.csproj" />
+    <Project Path="src/Jex.Infrastructure/Jex.Infrastructure.csproj" />
+    <Project Path="src/Jex.WebAPI/Jex.WebAPI.csproj" />
+  </Folder>
+</Solution>
