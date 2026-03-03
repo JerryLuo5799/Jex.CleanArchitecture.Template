@@ -16,8 +16,8 @@ namespace Jex.IntegrationTests;
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>, IDisposable
 {
     /// <summary>A well-known secret used only in testing.</summary>
-    public const string TestJwtSecret  = "TestOnly-SuperSecretKey-AtLeast32Chars!";
-    public const string TestJwtIssuer   = "Jex";
+    public const string TestJwtSecret = "TestOnly-SuperSecretKey-AtLeast32Chars!";
+    public const string TestJwtIssuer = "Jex";
     public const string TestJwtAudience = "Jex";
 
     private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"jex_test_{Guid.NewGuid()}.db");

@@ -8,9 +8,10 @@ namespace Jex.IntegrationTests.Controllers;
 /// <summary>
 /// Integration tests for the authentication endpoint.
 /// </summary>
-public sealed class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
+public sealed class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>, IAsyncLifetime
 {
     private readonly HttpClient _client;
+    private readonly HttpClient _authClient;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public AuthControllerTests(CustomWebApplicationFactory factory)
@@ -18,15 +19,21 @@ public sealed class AuthControllerTests : IClassFixture<CustomWebApplicationFact
         // Use an unauthenticated client — the login endpoint is public.
         _client = factory.CreateClient();
         // Pre-populate a user via the factory's authenticated client so we can test login.
-        var authClient = factory.CreateAuthenticatedClient();
-        authClient.PostAsync("/api/users", JsonBody(new
+        _authClient = factory.CreateAuthenticatedClient();
+    }
+
+    public async Task InitializeAsync()
+    {
+        await _authClient.PostAsync("/api/users", JsonBody(new
         {
             FirstName = "Login",
             LastName = "Tester",
             Email = "login.tester@example.com",
             Password = "Secure123!"
-        })).GetAwaiter().GetResult();
+        }));
     }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     private static StringContent JsonBody(object body) =>
         new(JsonSerializer.Serialize(body, JsonOptions), Encoding.UTF8, "application/json");

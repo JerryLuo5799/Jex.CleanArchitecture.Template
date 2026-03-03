@@ -17,6 +17,10 @@ var jwtSection = builder.Configuration.GetSection("Jwt");
 var secret = jwtSection["Secret"]
     ?? throw new InvalidOperationException("JWT secret is not configured (Jwt:Secret).");
 
+if (secret == "CHANGE-THIS-TO-A-STRONG-SECRET-KEY-AT-LEAST-32-CHARS")
+    throw new InvalidOperationException(
+        "The default JWT secret placeholder is in use. Set a strong Jwt:Secret in your environment-specific configuration before running in production.");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

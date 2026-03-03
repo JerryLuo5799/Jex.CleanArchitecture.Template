@@ -22,6 +22,8 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
     public async Task<IdentityResult> CreateAsync(User user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        // ExecuteIdentityAsync returns the auto-generated ROWID from the database.
+        // We assign it to user.Id so the caller (e.g. UserManager) can retrieve the new Id.
         var id = await freeSql.Insert(user).ExecuteIdentityAsync(cancellationToken);
         user.Id = id;
         return IdentityResult.Success;
