@@ -16,7 +16,7 @@ public sealed class UsersControllerEmptyTests : IClassFixture<CustomWebApplicati
 
     public UsersControllerEmptyTests(CustomWebApplicationFactory factory)
     {
-        _client = factory.CreateClient();
+        _client = factory.CreateAuthenticatedClient();
     }
 
     [Fact]
@@ -39,11 +39,13 @@ public sealed class UsersControllerEmptyTests : IClassFixture<CustomWebApplicati
 public sealed class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory _factory;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public UsersControllerTests(CustomWebApplicationFactory factory)
     {
-        _client = factory.CreateClient();
+        _factory = factory;
+        _client = factory.CreateAuthenticatedClient();
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
@@ -171,5 +173,15 @@ public sealed class UsersControllerTests : IClassFixture<CustomWebApplicationFac
         var response = await _client.DeleteAsync("/api/users/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Unauthenticated_ReturnsUnauthorized()
+    {
+        // Use a client without a JWT token.
+        var unauthenticatedClient = _factory.CreateClient();
+        var response = await unauthenticatedClient.GetAsync("/api/users");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

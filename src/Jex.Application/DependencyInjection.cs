@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Jex.Application.Common.Behaviors;
+using Jex.Application.Features.Auth.Commands.Login;
 using Jex.Application.Features.Users.Commands.CreateUser;
 using Jex.Application.Features.Users.Commands.UpdateUser;
 
@@ -24,6 +25,7 @@ public static class DependencyInjection
         // Register Sannr validators
         CreateUserCommandValidator.Register();
         UpdateUserCommandValidator.Register();
+        LoginCommandValidator.Register();
 
         return services;
     }

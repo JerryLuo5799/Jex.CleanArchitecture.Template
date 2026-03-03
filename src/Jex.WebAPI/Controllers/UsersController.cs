@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jex.Application.Features.Users.Commands.CreateUser;
 using Jex.Application.Features.Users.Commands.DeleteUser;
@@ -12,8 +13,10 @@ namespace Jex.WebAPI.Controllers;
 /// <summary>
 /// RESTful API for user management.
 /// Each endpoint dispatches a MediatR command or query.
+/// All endpoints require a valid JWT bearer token.
 /// </summary>
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public sealed class UsersController(ISender sender) : ControllerBase
 {

@@ -1,13 +1,42 @@
+using System.Text;
 using Jex.Application;
 using Jex.Application.Common.Exceptions;
 using Jex.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Layer registrations ─────────────────────────────────────────────────────
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// ── JWT Bearer authentication ────────────────────────────────────────────────
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var secret = jwtSection["Secret"]
+    ?? throw new InvalidOperationException("JWT secret is not configured (Jwt:Secret).");
+
+if (secret == "CHANGE-THIS-TO-A-STRONG-SECRET-KEY-AT-LEAST-32-CHARS")
+    throw new InvalidOperationException(
+        "The default JWT secret placeholder is in use. Set a strong Jwt:Secret in your environment-specific configuration before running in production.");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer   = jwtSection["Issuer"]   ?? "Jex",
+            ValidAudience = jwtSection["Audience"] ?? "Jex",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // ── ASP.NET Core services ───────────────────────────────────────────────────
 builder.Services.AddControllers()
@@ -65,6 +94,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

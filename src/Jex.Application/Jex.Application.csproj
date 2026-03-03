@@ -5,9 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Facet" Version="5.7.0" />
-    <PackageReference Include="Facet.Extensions" Version="5.7.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.2" />
     <PackageReference Include="Sannr" Version="1.4.0" />
