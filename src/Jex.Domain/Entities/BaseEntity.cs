@@ -1,11 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Jex.Domain.Entities;
 
 /// <summary>
 /// Base entity with common audit fields for all domain entities.
-/// Table/column mappings are configured in Infrastructure via FreeSQL Fluent API.
+/// ORM mapping is configured via data annotation attributes.
 /// </summary>
 public abstract class BaseEntity
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

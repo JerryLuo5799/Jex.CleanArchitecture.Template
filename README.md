@@ -51,17 +51,18 @@ Facet replaces AutoMapper / Mapster with no reflection, no configuration, no run
 
 ## ⚡ FreeSQL — Code First
 
-FreeSQL maps entities using a **Fluent API** configured in the Infrastructure layer, keeping the Domain clean:
+FreeSQL maps entities using **data annotation attributes** directly on entity properties:
 
 ```csharp
-// Infrastructure/Persistence/FreeSqlEntityConfiguration.cs
-freeSql.CodeFirst.ConfigEntity<User>(eb =>
+// Domain/Entities/User.cs
+[Table("users")]
+public class User : BaseEntity
 {
-    eb.Name("users");
-    eb.Property(u => u.Id).IsPrimary(true).IsIdentity(true);
-    eb.Property(u => u.Email).StringLength(200).IsNullable(false);
+    [MaxLength(200)]
+    [Required]
+    public string Email { get; set; } = string.Empty;
     // ...
-});
+}
 ```
 
 `UseAutoSyncStructure(true)` automatically creates/migrates tables on startup — no migration files needed.
@@ -157,7 +158,6 @@ src/
 │
 ├── Jex.Infrastructure/
 │   ├── Persistence/
-│   │   ├── FreeSqlEntityConfiguration.cs   # Fluent API mapping
 │   │   └── Repositories/
 │   │       ├── Repository.cs           # Generic FreeSQL repository
 │   │       └── UserRepository.cs
