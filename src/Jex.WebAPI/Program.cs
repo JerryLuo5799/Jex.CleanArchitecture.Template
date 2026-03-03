@@ -2,15 +2,32 @@ using System.Text;
 using Jex.Application;
 using Jex.Application.Common.Exceptions;
 using Jex.Infrastructure;
+using Jex.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using NLog;
+using NLog.Web;
+
+// Initialise NLog early so startup errors are also captured.
+var logger = LogManager.Setup()
+    .LoadConfigurationFromFile("nlog.config")
+    .GetCurrentClassLogger();
+
+try
+{
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
 // ── Layer registrations ─────────────────────────────────────────────────────
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+
+var nlogSqlLogger = NLog.LogManager.GetLogger("FreeSql");
+builder.Services.AddInfrastructure(builder.Configuration, (sql, elapsed) =>
+    nlogSqlLogger.Debug("SQL={0} Elapsed={1}ms", sql, elapsed));
 
 // ── JWT Bearer authentication ────────────────────────────────────────────────
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -93,6 +110,8 @@ app.UseExceptionHandler(errApp =>
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
+app.UseMiddleware<ApiLoggingMiddleware>();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -101,6 +120,17 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+}
+catch (Exception ex)
+{
+    logger.Error(ex, "Application stopped because of an exception.");
+    throw;
+}
+finally
+{
+    LogManager.Shutdown();
+}
 
 // Required for WebApplicationFactory in integration tests.
 public partial class Program { }
