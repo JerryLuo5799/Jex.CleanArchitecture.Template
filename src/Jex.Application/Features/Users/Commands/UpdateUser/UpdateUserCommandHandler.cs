@@ -27,7 +27,6 @@ public sealed class UpdateUserCommandHandler(IUserRepository userRepository)
         user.LastName = request.LastName;
         user.Email = request.Email;
         user.Status = request.Status;
-        user.UpdatedAt = DateTime.UtcNow;
 
         await userRepository.UpdateAsync(user, cancellationToken);
     }

@@ -20,6 +20,11 @@ public class Repository<TEntity>(IFreeSql freeSql) : IRepository<TEntity>
     public async Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         => await FreeSql.Select<TEntity>().ToListAsync(cancellationToken);
 
+    public async Task<List<TEntity>> GetPagedAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        => await FreeSql.Select<TEntity>()
+            .Page(page, pageSize)
+            .ToListAsync(cancellationToken);
+
     public async Task<List<TEntity>> FindAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
@@ -27,7 +32,6 @@ public class Repository<TEntity>(IFreeSql freeSql) : IRepository<TEntity>
 
     public async Task<TEntity> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        entity.CreatedAt = DateTime.UtcNow;
         var id = await FreeSql.Insert(entity).ExecuteIdentityAsync(cancellationToken);
         entity.Id = id;
         return entity;
