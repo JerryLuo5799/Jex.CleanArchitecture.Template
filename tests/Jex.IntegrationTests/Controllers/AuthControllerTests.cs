@@ -47,36 +47,47 @@ public sealed class AuthControllerTests : IClassFixture<CustomWebApplicationFact
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
-        Assert.True(body.TryGetProperty("token", out var tokenProp));
+        Assert.Equal(2000, body.GetProperty("code").GetInt32());
+        var data = body.GetProperty("data");
+        Assert.True(data.TryGetProperty("token", out var tokenProp));
         var token = tokenProp.GetString();
         Assert.NotNull(token);
         Assert.NotEmpty(token);
     }
 
     [Fact]
-    public async Task Login_InvalidPassword_Returns400()
+    public async Task Login_InvalidPassword_ReturnsOkWithErrorCode()
     {
         var payload = new { Email = "login.tester@example.com", Password = "WrongPassword!" };
         var response = await _client.PostAsync("/api/auth/login", JsonBody(payload));
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4000, body.GetProperty("code").GetInt32());
     }
 
     [Fact]
-    public async Task Login_UnknownEmail_Returns400()
+    public async Task Login_UnknownEmail_ReturnsOkWithErrorCode()
     {
         var payload = new { Email = "nobody@example.com", Password = "Secure123!" };
         var response = await _client.PostAsync("/api/auth/login", JsonBody(payload));
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4000, body.GetProperty("code").GetInt32());
     }
 
     [Fact]
-    public async Task Login_MissingEmail_Returns400()
+    public async Task Login_MissingEmail_ReturnsOkWithErrorCode()
     {
         var payload = new { Email = "", Password = "Secure123!" };
         var response = await _client.PostAsync("/api/auth/login", JsonBody(payload));
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4000, body.GetProperty("code").GetInt32());
     }
 }

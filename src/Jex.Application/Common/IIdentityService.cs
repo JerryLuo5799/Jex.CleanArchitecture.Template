@@ -1,4 +1,4 @@
-namespace Jex.Application.Common.Interfaces;
+namespace Jex.Application.Common;
 
 /// <summary>
 /// Abstraction over ASP.NET Core Identity operations.

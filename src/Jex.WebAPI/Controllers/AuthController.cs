@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Jex.Application.Features.Auth.Commands.Login;
+using Jex.WebAPI.Models;
 
 namespace Jex.WebAPI.Controllers;
 
@@ -16,12 +17,11 @@ public sealed class AuthController(ISender sender) : ControllerBase
     /// </summary>
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login(
         [FromBody] LoginCommand command,
         CancellationToken cancellationToken)
     {
         var token = await sender.Send(command, cancellationToken);
-        return Ok(new { token });
+        return Ok(ApiResponse<object>.Success(HttpContext.TraceIdentifier, new { token }));
     }
 }

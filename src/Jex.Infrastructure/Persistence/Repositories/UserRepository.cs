@@ -1,5 +1,5 @@
 using FreeSql;
-using Jex.Application.Common.Interfaces;
+using Jex.Application.Common;
 using Jex.Domain.Entities;
 
 namespace Jex.Infrastructure.Persistence.Repositories;

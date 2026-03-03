@@ -2,9 +2,9 @@ using System.Text;
 using Jex.Application;
 using Jex.Application.Common.Exceptions;
 using Jex.Infrastructure;
+using Jex.WebAPI.Models;
 using Jex.WebAPI.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Web;
@@ -82,27 +82,18 @@ app.UseExceptionHandler(errApp =>
     errApp.Run(async context =>
     {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
-        var (status, title) = exception switch
+        var (code, msg) = exception switch
         {
-            NotFoundException => (StatusCodes.Status404NotFound, "Not Found"),
-            ValidationException => (StatusCodes.Status400BadRequest, "Validation Error"),
-            _ => (StatusCodes.Status500InternalServerError, "Server Error")
+            NotFoundException => (4040, exception.Message),
+            ValidationException ve => (4000, ve.Message),
+            _ => (5000, "An unexpected error occurred.")
         };
 
-        context.Response.StatusCode = status;
-        context.Response.ContentType = "application/problem+json";
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        context.Response.ContentType = "application/json";
 
-        var problem = new ProblemDetails
-        {
-            Status = status,
-            Title = title,
-            Detail = exception?.Message
-        };
-
-        if (exception is ValidationException ve)
-            problem.Extensions["errors"] = ve.Errors;
-
-        await context.Response.WriteAsJsonAsync(problem);
+        var response = ApiResponse<object>.Fail(context.TraceIdentifier, code, msg);
+        await context.Response.WriteAsJsonAsync(response);
     });
 });
 

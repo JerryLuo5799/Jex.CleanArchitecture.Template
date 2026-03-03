@@ -1,5 +1,5 @@
 using MediatR;
-using Jex.Application.Common.Interfaces;
+using Jex.Application.Common;
 using Jex.Application.Features.Users.Queries.GetUserById;
 
 namespace Jex.Application.Features.Users.Queries.GetUsers;
