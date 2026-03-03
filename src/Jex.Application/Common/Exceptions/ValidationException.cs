@@ -1,18 +1,23 @@
-using FluentValidation.Results;
+using Sannr;
 
 namespace Jex.Application.Common.Exceptions;
 
 /// <summary>
-/// Thrown when a FluentValidation rule fails on a command or query.
+/// Thrown when a Sannr validation rule fails on a command or query.
 /// </summary>
 public class ValidationException : Exception
 {
-    public ValidationException(IEnumerable<ValidationFailure> failures)
+    public ValidationException(IEnumerable<ValidationError> errors)
         : base("One or more validation failures occurred.")
     {
-        Errors = failures
-            .GroupBy(f => f.PropertyName, f => f.ErrorMessage)
+        Errors = errors
+            .GroupBy(e => e.MemberName, e => e.Message)
             .ToDictionary(g => g.Key, g => g.ToArray());
+    }
+
+    public ValidationException(string member, string message)
+        : this([new ValidationError(member, message, Severity.Error)])
+    {
     }
 
     public IDictionary<string, string[]> Errors { get; }

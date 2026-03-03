@@ -1,14 +1,12 @@
-using FluentValidation;
 using MediatR;
 
 namespace Jex.Application.Common.Behaviors;
 
 /// <summary>
-/// MediatR pipeline behavior that runs FluentValidation validators before the handler.
+/// MediatR pipeline behavior that runs Sannr validators before the handler.
 /// Throws <see cref="Exceptions.ValidationException"/> when any rule fails.
 /// </summary>
-public sealed class ValidationBehavior<TRequest, TResponse>(
-    IEnumerable<IValidator<TRequest>> validators)
+public sealed class ValidationBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
@@ -17,21 +15,14 @@ public sealed class ValidationBehavior<TRequest, TResponse>(
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        if (!validators.Any())
+        if (!Sannr.AspNetCore.SannrValidatorRegistry.TryGetValidator(typeof(TRequest), out _))
             return await next();
 
-        var context = new ValidationContext<TRequest>(request);
-        var results = await Task.WhenAll(
-            validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+        var result = await Sannr.AspNetCore.SannrValidatorRegistry.ValidateAsync(request);
 
-        var failures = results
-            .SelectMany(r => r.Errors)
-            .Where(f => f is not null)
-            .ToList();
+        if (result is null || result.IsValid)
+            return await next();
 
-        if (failures.Count > 0)
-            throw new Exceptions.ValidationException(failures);
-
-        return await next();
+        throw new Exceptions.ValidationException(result.Errors);
     }
 }

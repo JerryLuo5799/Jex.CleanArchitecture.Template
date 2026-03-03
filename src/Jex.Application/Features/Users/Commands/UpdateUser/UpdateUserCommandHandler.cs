@@ -18,10 +18,7 @@ public sealed class UpdateUserCommandHandler(IUserRepository userRepository)
 
         var isEmailUnique = await userRepository.IsEmailUniqueAsync(request.Email, request.Id, cancellationToken);
         if (!isEmailUnique)
-            throw new ValidationException(
-            [
-                new FluentValidation.Results.ValidationFailure(nameof(request.Email), "Email address is already in use.")
-            ]);
+            throw new ValidationException(nameof(request.Email), "Email address is already in use.");
 
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
