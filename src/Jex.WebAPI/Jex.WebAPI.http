@@ -1,0 +1,6 @@
+@Jex.WebAPI_HostAddress = http://localhost:5208
+
+GET {{Jex.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
