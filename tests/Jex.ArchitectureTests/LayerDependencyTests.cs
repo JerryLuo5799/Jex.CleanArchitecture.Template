@@ -1,6 +1,6 @@
 using NetArchTest.Rules;
 using Jex.Domain.Entities;
-using Jex.Application.Common.Interfaces;
+using Jex.Application.Common;
 using Jex.Infrastructure.Persistence.Repositories;
 
 namespace Jex.ArchitectureTests;

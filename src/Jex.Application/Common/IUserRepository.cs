@@ -1,6 +1,6 @@
 using Jex.Domain.Entities;
 
-namespace Jex.Application.Common.Interfaces;
+namespace Jex.Application.Common;
 
 /// <summary>
 /// User-specific repository for additional user queries.

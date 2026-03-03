@@ -1,6 +1,6 @@
 using MediatR;
+using Jex.Application.Common;
 using Jex.Application.Common.Exceptions;
-using Jex.Application.Common.Interfaces;
 using Jex.Domain.Entities;
 
 namespace Jex.Application.Features.Users.Queries.GetUserById;

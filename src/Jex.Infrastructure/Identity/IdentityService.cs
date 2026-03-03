@@ -1,4 +1,4 @@
-using Jex.Application.Common.Interfaces;
+using Jex.Application.Common;
 using Jex.Domain.Entities;
 using Jex.Domain.Enums;
 using Microsoft.AspNetCore.Identity;

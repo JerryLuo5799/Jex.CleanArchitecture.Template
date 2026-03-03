@@ -1,5 +1,5 @@
 using Jex.Application.Common.Exceptions;
-using Jex.Application.Common.Interfaces;
+using Jex.Application.Common;
 using Jex.Application.Features.Users.Queries.GetUserById;
 using Jex.Domain.Entities;
 using Jex.Domain.Enums;

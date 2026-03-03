@@ -26,8 +26,9 @@ public sealed class UsersControllerEmptyTests : IClassFixture<CustomWebApplicati
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var users = await response.Content.ReadFromJsonAsync<List<JsonElement>>(JsonOptions);
-        Assert.NotNull(users);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(2000, body.GetProperty("code").GetInt32());
+        var users = body.GetProperty("data").EnumerateArray().ToList();
         Assert.Empty(users);
     }
 }
@@ -56,7 +57,7 @@ public sealed class UsersControllerTests : IClassFixture<CustomWebApplicationFac
     // ── Tests ────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task Create_ValidPayload_Returns201WithId()
+    public async Task Create_ValidPayload_ReturnsOkWithId()
     {
         var payload = new
         {
@@ -68,15 +69,17 @@ public sealed class UsersControllerTests : IClassFixture<CustomWebApplicationFac
 
         var response = await _client.PostAsync("/api/users", JsonBody(payload));
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
-        Assert.True(body.TryGetProperty("id", out var idProp));
+        Assert.Equal(2000, body.GetProperty("code").GetInt32());
+        var data = body.GetProperty("data");
+        Assert.True(data.TryGetProperty("id", out var idProp));
         Assert.True(idProp.GetInt64() > 0);
     }
 
     [Fact]
-    public async Task Create_DuplicateEmail_Returns400()
+    public async Task Create_DuplicateEmail_ReturnsOkWithErrorCode()
     {
         var payload = new
         {
@@ -89,7 +92,10 @@ public sealed class UsersControllerTests : IClassFixture<CustomWebApplicationFac
         await _client.PostAsync("/api/users", JsonBody(payload));
         var response = await _client.PostAsync("/api/users", JsonBody(payload));
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4000, body.GetProperty("code").GetInt32());
     }
 
     [Fact]
@@ -105,74 +111,92 @@ public sealed class UsersControllerTests : IClassFixture<CustomWebApplicationFac
         };
         var createResponse = await _client.PostAsync("/api/users", JsonBody(create));
         var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
-        var id = created.GetProperty("id").GetInt64();
+        var id = created.GetProperty("data").GetProperty("id").GetInt64();
 
         // Retrieve it
         var response = await _client.GetAsync($"/api/users/{id}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var user = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(2000, body.GetProperty("code").GetInt32());
+        var user = body.GetProperty("data");
         Assert.Equal("Carol", user.GetProperty("firstName").GetString());
         Assert.Equal("carol@example.com", user.GetProperty("email").GetString());
     }
 
     [Fact]
-    public async Task GetById_NonExistentUser_Returns404()
+    public async Task GetById_NonExistentUser_ReturnsOkWithNotFoundCode()
     {
         var response = await _client.GetAsync("/api/users/999999");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4040, body.GetProperty("code").GetInt32());
     }
 
     [Fact]
-    public async Task Update_ExistingUser_Returns204()
+    public async Task Update_ExistingUser_ReturnsOkWithSuccessCode()
     {
         // Create
         var create = new { FirstName = "Dave", LastName = "Old", Email = "dave@example.com", Password = "Secure123!" };
         var createResponse = await _client.PostAsync("/api/users", JsonBody(create));
         var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
-        var id = created.GetProperty("id").GetInt64();
+        var id = created.GetProperty("data").GetProperty("id").GetInt64();
 
         // Update
         var update = new { FirstName = "Dave", LastName = "New", Email = "dave.new@example.com", Status = (int)UserStatus.Active };
         var response = await _client.PutAsync($"/api/users/{id}", JsonBody(update));
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(2000, body.GetProperty("code").GetInt32());
     }
 
     [Fact]
-    public async Task Update_NonExistentUser_Returns404()
+    public async Task Update_NonExistentUser_ReturnsOkWithNotFoundCode()
     {
         var update = new { FirstName = "X", LastName = "Y", Email = "xy@example.com", Status = (int)UserStatus.Active };
         var response = await _client.PutAsync("/api/users/999999", JsonBody(update));
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4040, body.GetProperty("code").GetInt32());
     }
 
     [Fact]
-    public async Task Delete_ExistingUser_Returns204ThenNotFound()
+    public async Task Delete_ExistingUser_ReturnsOkThenNotFoundCode()
     {
         // Create
         var create = new { FirstName = "Eve", LastName = "Del", Email = "eve@example.com", Password = "Secure123!" };
         var createResponse = await _client.PostAsync("/api/users", JsonBody(create));
         var created = await createResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
-        var id = created.GetProperty("id").GetInt64();
+        var id = created.GetProperty("data").GetProperty("id").GetInt64();
 
         // Delete
         var deleteResponse = await _client.DeleteAsync($"/api/users/{id}");
-        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, deleteResponse.StatusCode);
+        var deleteBody = await deleteResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(2000, deleteBody.GetProperty("code").GetInt32());
 
         // Confirm gone
         var getResponse = await _client.GetAsync($"/api/users/{id}");
-        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+        var getBody = await getResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4040, getBody.GetProperty("code").GetInt32());
     }
 
     [Fact]
-    public async Task Delete_NonExistentUser_Returns404()
+    public async Task Delete_NonExistentUser_ReturnsOkWithNotFoundCode()
     {
         var response = await _client.DeleteAsync("/api/users/999999");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+        Assert.Equal(4040, body.GetProperty("code").GetInt32());
     }
 
     [Fact]

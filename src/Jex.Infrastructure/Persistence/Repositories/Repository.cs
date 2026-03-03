@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using FreeSql;
-using Jex.Application.Common.Interfaces;
+using Jex.Application.Common;
 
 namespace Jex.Infrastructure.Persistence.Repositories;
 

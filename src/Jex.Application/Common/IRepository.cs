@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Jex.Domain.Entities;
 
-namespace Jex.Application.Common.Interfaces;
+namespace Jex.Application.Common;
 
 /// <summary>
 /// Generic repository interface for FreeSQL-backed persistence.
