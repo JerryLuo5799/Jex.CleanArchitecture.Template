@@ -17,10 +17,7 @@ public sealed class CreateUserCommandHandler(IUserRepository userRepository)
     {
         var isEmailUnique = await userRepository.IsEmailUniqueAsync(request.Email, cancellationToken: cancellationToken);
         if (!isEmailUnique)
-            throw new ValidationException(
-            [
-                new FluentValidation.Results.ValidationFailure(nameof(request.Email), "Email address is already in use.")
-            ]);
+            throw new ValidationException(nameof(request.Email), "Email address is already in use.");
 
         var user = new User
         {

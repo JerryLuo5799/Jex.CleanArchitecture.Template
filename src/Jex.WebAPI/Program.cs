@@ -10,7 +10,19 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 // ── ASP.NET Core services ───────────────────────────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApplicationPartManager(apm =>
+    {
+        // Exclude Sannr and its Swashbuckle dependency from MVC type scanning.
+        // Sannr.AspNetCore contains source-generator stubs that cause TypeLoadException
+        // when scanned by the ControllerFeatureProvider; Swashbuckle 6.4.0 (pulled in
+        // by Sannr) is incompatible with the Microsoft.OpenApi 2.x that .NET 10 uses.
+        var partsToRemove = apm.ApplicationParts
+            .Where(p => p.Name.StartsWith("Sannr") || p.Name.StartsWith("Swashbuckle"))
+            .ToList();
+        foreach (var part in partsToRemove)
+            apm.ApplicationParts.Remove(part);
+    });
 builder.Services.AddOpenApi();
 
 // ── ProblemDetails for RFC 7807 error responses ─────────────────────────────

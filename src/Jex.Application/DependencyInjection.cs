@@ -1,7 +1,8 @@
-using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Jex.Application.Common.Behaviors;
+using Jex.Application.Features.Users.Commands.CreateUser;
+using Jex.Application.Features.Users.Commands.UpdateUser;
 
 namespace Jex.Application;
 
@@ -20,7 +21,9 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
 
-        services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
+        // Register Sannr validators
+        CreateUserCommandValidator.Register();
+        UpdateUserCommandValidator.Register();
 
         return services;
     }
