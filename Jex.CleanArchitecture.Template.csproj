@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageId>Jex.CleanArchitecture.Template</PackageId>
+    <Title>Jex Clean Architecture</Title>
+    <Authors>JerryLuo</Authors>
+    <Description>A lightweight, opinionated Clean Architecture template for .NET 10 with CQRS (MediatR), FreeSQL (Code First), JWT authentication, FluentValidation, and built-in unit/integration/architecture tests.</Description>
+    <PackageTags>dotnet-new template clean-architecture cqrs freesql mediatr jwt</PackageTags>
+    <PackageProjectUrl>https://github.com/JerryLuo5799/Jex.CleanArchitecture.Template</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JerryLuo5799/Jex.CleanArchitecture.Template</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <TargetFramework>net10.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128;NU5110</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include=".template.config\**" />
+    <Content Include="src\**" Exclude="src\**\bin\**;src\**\obj\**" />
+    <Content Include="tests\**" Exclude="tests\**\bin\**;tests\**\obj\**" />
+    <Content Include="scripts\**" />
+    <Content Include="Jex.CleanArchitecture.Template.slnx" />
+    <Content Include="LICENSE" />
+    <Content Include="README.md" />
+  </ItemGroup>
+
+</Project>
