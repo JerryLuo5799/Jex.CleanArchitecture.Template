@@ -17,7 +17,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        Action<string, long>? onSqlExecuted = null)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? "Data Source=jex.db";
@@ -53,6 +54,13 @@ public static class DependencyInjection
         });
 
         services.AddSingleton(freeSql);
+
+        // ── SQL command monitoring ───────────────────────────────────────────
+        if (onSqlExecuted is not null)
+        {
+            freeSql.Aop.CommandAfter += (_, e) =>
+                onSqlExecuted(e.Command.CommandText, e.ElapsedMilliseconds);
+        }
 
         // ── ASP.NET Core Identity (FreeSQL-backed stores) ────────────────────
         services.AddIdentityCore<User>(options =>

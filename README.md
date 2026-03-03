@@ -90,10 +90,26 @@ A `ValidationBehavior<TRequest, TResponse>` MediatR pipeline behavior automatica
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 
+### Install the Template
+
+Install the template from NuGet:
+
+```bash
+dotnet new install Jex.CleanArchitecture.Template
+```
+
+### Create a New Project
+
+```bash
+dotnet new jex -n YourProjectName
+```
+
+This will scaffold a complete Clean Architecture solution under `YourProjectName/`.
+
 ### Run
 
 ```bash
-cd src/Jex.WebAPI
+cd YourProjectName/src/YourProjectName.WebAPI
 dotnet run
 ```
 
@@ -101,6 +117,12 @@ The app will:
 1. Create `jex.db` (SQLite, Code First — tables auto-created)
 2. Expose the REST API at `http://localhost:5208`
 3. Serve OpenAPI at `http://localhost:5208/openapi/v1.json`
+
+### Uninstall the Template
+
+```bash
+dotnet new uninstall Jex.CleanArchitecture.Template
+```
 
 ### API Endpoints
 
