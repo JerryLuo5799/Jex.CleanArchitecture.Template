@@ -5,4 +5,9 @@
     <Project Path="src/Jex.Infrastructure/Jex.Infrastructure.csproj" />
     <Project Path="src/Jex.WebAPI/Jex.WebAPI.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Jex.UnitTests/Jex.UnitTests.csproj" />
+    <Project Path="tests/Jex.IntegrationTests/Jex.IntegrationTests.csproj" />
+    <Project Path="tests/Jex.ArchitectureTests/Jex.ArchitectureTests.csproj" />
+  </Folder>
 </Solution>
