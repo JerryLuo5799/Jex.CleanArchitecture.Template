@@ -1,11 +1,10 @@
 using Jex.Application;
 using Jex.Application.Common;
-using Jex.Application.Common.Exceptions;
 using Jex.Infrastructure;
 using Jex.WebAPI;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Middleware;
-using Jex.WebAPI.Models;
+using Jex.WebAPI.Options;
 
 // NLog is configured from the "NLog" section of appsettings*.json so the same file drives
 // logging, environment overrides and template conditions.
@@ -16,6 +15,12 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    if (OpenApiGeneration.IsActive)
+    {
+        // Build-time document generation starts the app for real; it must not need secrets or a database.
+        builder.Configuration.AddInMemoryCollection(OpenApiGeneration.PlaceholderConfiguration);
+    }
+
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
 
@@ -25,46 +30,58 @@ try
 
     var app = builder.Build();
 
+    // Middleware order matters: logging observes the final response, the exception handler
+    // produces envelopes, authentication runs before rate limiting so limits can be per user.
     app.UseMiddleware<RequestLoggingMiddleware>();
-
-    app.UseExceptionHandler(errApp =>
+    app.UseExceptionHandler();
+    app.UseStatusCodePages(async statusContext =>
     {
-        errApp.Run(async context =>
+        var http = statusContext.HttpContext;
+        if (!ApiResponseWriter.IsApiRequest(http))
         {
-            var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-            var requestId = RequestIdentity.Get(context);
+            return;
+        }
 
-            var response = exception switch
-            {
-                ValidationException ve => ApiResponse.Fail(requestId, ve.Code, ve.Message, ve.Errors),
-                KnownException ke => ApiResponse.Fail(requestId, ke.Code, ke.Message),
-                _ => ApiResponse.Fail(
-                    requestId,
-                    ErrorCodes.Unexpected,
-                    app.Environment.IsDevelopment() ? exception?.Message ?? "Unexpected error." : "An unexpected error occurred."),
-            };
+        var (code, message) = http.Response.StatusCode switch
+        {
+            StatusCodes.Status404NotFound => (ErrorCodes.NotFound, "The requested route does not exist."),
+            StatusCodes.Status405MethodNotAllowed => (ErrorCodes.MethodNotAllowed, "The HTTP method is not allowed on this route."),
+            StatusCodes.Status415UnsupportedMediaType => (ErrorCodes.Validation, "Unsupported content type. Send 'application/json'."),
+            StatusCodes.Status401Unauthorized => (ErrorCodes.Unauthenticated, "Authentication is required."),
+            StatusCodes.Status403Forbidden => (ErrorCodes.Forbidden, "You do not have permission to perform this action."),
+            >= 400 and < 500 => (ErrorCodes.Validation, "The request could not be processed."),
+            _ => (ErrorCodes.Unexpected, "An unexpected error occurred."),
+        };
 
-            if (exception is not KnownException)
-            {
-                app.Logger.LogError(exception, "Unhandled exception for {Method} {Path}", context.Request.Method, context.Request.Path);
-            }
-
-            context.Items[RequestLoggingMiddleware.ApiCodeItemKey] = response.Code;
-            context.Response.StatusCode = StatusCodes.Status200OK;
-            await context.Response.WriteAsJsonAsync(response);
-        });
+        await ApiResponseWriter.WriteAsync(http, code, message);
     });
 
-    if (app.Environment.IsDevelopment())
+    app.UseForwardedHeaders();
+
+    if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing")
+        && Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
     {
-        app.MapOpenApi();
+        app.UseHttpsRedirection();
     }
 
-    app.UseHttpsRedirection();
+    app.UseCors(CorsSettings.PolicyName);
     app.UseAuthentication();
+    app.UseRateLimiter();
     app.UseAuthorization();
 
-    app.MapControllers();
+    app.MapEndpoints();
+
+    app.MapHealthChecks("/health").AllowAnonymous().DisableRateLimiting();
+    app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") })
+        .AllowAnonymous().DisableRateLimiting();
+    app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false })
+        .AllowAnonymous().DisableRateLimiting();
+
+    if (!app.Environment.IsProduction())
+    {
+        app.MapOpenApi().AllowAnonymous().DisableRateLimiting();
+        app.MapScalarApiReference(options => options.WithTitle("Jex API")).AllowAnonymous().DisableRateLimiting();
+    }
 
     await app.RunAsync();
 }

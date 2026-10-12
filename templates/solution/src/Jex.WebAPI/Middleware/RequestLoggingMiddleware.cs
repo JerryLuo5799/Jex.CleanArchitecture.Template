@@ -11,8 +11,6 @@ namespace Jex.WebAPI.Middleware;
 /// </summary>
 public sealed class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
 {
-    public const string ApiCodeItemKey = "Jex.ApiCode";
-
     public async Task InvokeAsync(HttpContext context)
     {
         var start = Stopwatch.GetTimestamp();
@@ -33,7 +31,7 @@ public sealed class RequestLoggingMiddleware(RequestDelegate next, ILogger<Reque
             if (logger.IsEnabled(LogLevel.Information))
             {
                 var elapsed = Stopwatch.GetElapsedTime(start);
-                var apiCode = context.Items.TryGetValue(ApiCodeItemKey, out var code) ? code : null;
+                var apiCode = ApiResponseContext.GetCode(context);
                 var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 logger.LogInformation(

@@ -1,5 +1,6 @@
 using Jex.Application.Common.Interfaces;
 using Jex.Domain.Entities;
+using Jex.Infrastructure.HealthChecks;
 using Jex.Infrastructure.Identity;
 using Jex.Infrastructure.Persistence.Repositories;
 
@@ -46,6 +47,9 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
 
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddHealthChecks()
+            .AddCheck<FreeSqlHealthCheck>("database", tags: ["ready"]);
 
         return services;
     }

@@ -1,0 +1,669 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Jex.WebAPI | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "Auth_Login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "Users_GetUsers",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfListOfUserDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "Users_CreateUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCreatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "Users_GetUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfUserDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "Users_UpdateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "Users_DeleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponseOfCreatedResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Payload. Null on failure.",
+                "$ref": "#/components/schemas/CreatedResponse"
+              }
+            ]
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
+      "ApiResponseOfListOfUserDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/UserDto"
+            },
+            "description": "Payload. Null on failure."
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
+      "ApiResponseOfLoginResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Payload. Null on failure.",
+                "$ref": "#/components/schemas/LoginResponse"
+              }
+            ]
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
+      "ApiResponseOfObject": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "description": "Payload. Null on failure."
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
+      "ApiResponseOfUserDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Payload. Null on failure.",
+                "$ref": "#/components/schemas/UserDto"
+              }
+            ]
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
+      "CreatedResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        },
+        "description": "Payload returned by create endpoints."
+      },
+      "CreateUserCommand": {
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "description": "Creates a new user and returns the new user's Id."
+      },
+      "LoginCommand": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "description": "Authenticates a user and returns a JWT access token."
+      },
+      "LoginResponse": {
+        "required": [
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "description": "Payload of a successful login."
+      },
+      "UpdateUserRequest": {
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          }
+        },
+        "description": "Body of `PUT /api/users/{id}`; the id comes from the route."
+      },
+      "UserDto": {
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "email",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/UserStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "fullName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Public user DTO. Password hash and internal Identity fields (stamps, lockout) are never exposed.\r\nMapping is hand-written (see ADR-0009): keep UserDto UserDto.From(User user) next to the DTO."
+      },
+      "UserStatus": {
+        "type": "integer"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Paste the token returned by POST /api/auth/login.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Users"
+    }
+  ]
+}

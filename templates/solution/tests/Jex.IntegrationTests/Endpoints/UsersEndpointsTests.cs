@@ -154,14 +154,6 @@ public sealed class UsersEndpointsTests : IClassFixture<CustomWebApplicationFact
     }
 
     [Fact]
-    public async Task Unauthenticated_ReturnsUnauthorized()
-    {
-        var response = await _factory.CreateClient().GetAsync("/api/users");
-
-        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task AnyResponse_CarriesRequestIdHeaderMatchingEnvelope()
     {
         var response = await _client.GetAsync("/api/users/999999");

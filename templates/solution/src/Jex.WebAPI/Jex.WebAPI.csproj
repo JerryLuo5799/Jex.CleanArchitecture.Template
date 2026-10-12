@@ -4,6 +4,12 @@
     <UserSecretsId>8f3c2d5e-1b4a-4c6d-9e7f-0a1b2c3d4e5f</UserSecretsId>
   </PropertyGroup>
 
+  <!-- openapi.json is regenerated at build time into the solution root and committed, so API contract changes show up in diffs. -->
+  <PropertyGroup>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../..</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Jex.Application\Jex.Application.csproj" />
     <ProjectReference Include="..\Jex.Infrastructure\Jex.Infrastructure.csproj" />
@@ -12,7 +18,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="NLog.Web.AspNetCore" />
+    <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
 
 </Project>

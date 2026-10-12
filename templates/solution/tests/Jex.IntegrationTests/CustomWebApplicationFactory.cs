@@ -16,6 +16,18 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public const string TestJwtAudience = "Jex";
 
     private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"TPLNAMELOWER_test_{Guid.NewGuid():N}.db");
+    private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Overrides configuration values for this factory instance (e.g. tighter rate limits). Call before creating a client.</summary>
+    public CustomWebApplicationFactory WithSettings(params (string Key, string? Value)[] settings)
+    {
+        foreach (var (key, value) in settings)
+        {
+            _settings[key] = value;
+        }
+
+        return this;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -29,6 +41,14 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Jwt:Issuer", TestJwtIssuer);
         builder.UseSetting("Jwt:Audience", TestJwtAudience);
         builder.UseSetting("Jwt:ExpiryMinutes", "60");
+
+        // Rate limiting is exercised by RateLimitingTests only; keep other test classes deterministic.
+        builder.UseSetting("RateLimiting:Enabled", "false");
+
+        foreach (var (key, value) in _settings)
+        {
+            builder.UseSetting(key, value);
+        }
     }
 
     /// <summary>Creates a client whose requests carry a test JWT (optionally with roles).</summary>
