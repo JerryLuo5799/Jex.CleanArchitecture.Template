@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Jex.Cli</AssemblyName>
+    <RootNamespace>Jex.Cli</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>jex</ToolCommandName>
+    <RollForward>LatestMajor</RollForward>
+    <!-- Keep InformationalVersion equal to the package version: CI builds would otherwise append +<sha>
+         and the version that jex prints would no longer match the version the pipeline installed. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+    <PackageId>Jex.Cli</PackageId>
+    <Title>jex - Jex Clean Architecture CLI</Title>
+    <Authors>JerryLuo</Authors>
+    <Description>Command-line tool for the Jex Clean Architecture template: create projects (jex new), scaffold features (jex scaffold), and run the build/test/database/infrastructure workflow of a generated solution (jex check, jex run, jex db, jex infra).</Description>
+    <PackageTags>dotnet-tool;cli;clean-architecture;templates;scaffolding</PackageTags>
+    <PackageProjectUrl>https://github.com/JerryLuo5799/Jex.CleanArchitecture.Template</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JerryLuo5799/Jex.CleanArchitecture.Template</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon Condition="Exists('..\..\docs\icon.png')">icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\docs\icon.png" Pack="true" PackagePath="\" Condition="Exists('..\..\docs\icon.png')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jex.Cli.Tests" />
+  </ItemGroup>
+
+</Project>
