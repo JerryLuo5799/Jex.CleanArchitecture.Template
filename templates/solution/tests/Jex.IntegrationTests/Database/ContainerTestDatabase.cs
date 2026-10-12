@@ -42,10 +42,37 @@ public sealed class ContainerTestDatabase : ITestDatabase
         var provider = "MySql";
 #endif
         container.StartAsync().GetAwaiter().GetResult();
+#if (UseSqlServer)
+        WaitForTempDb(container.GetConnectionString());
+#endif
         Console.Error.WriteLine($"Integration tests use {provider} in container {container.Name}.");
         return new ContainerTestDatabase(container, provider);
     }
 
     public void Dispose() => _container.DisposeAsync().AsTask().GetAwaiter().GetResult();
+#if (UseSqlServer)
+
+    // SQL Server reports ready before tempdb is online; early queries can then fail with
+    // "Could not find database ID 2, name 'tempdb'". Probe it before handing out the connection string.
+    private static void WaitForTempDb(string connectionString)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+                connection.Open();
+                using var command = connection.CreateCommand();
+                command.CommandText = "SELECT COUNT(*) FROM tempdb.sys.objects";
+                command.ExecuteScalar();
+                return;
+            }
+            catch (Microsoft.Data.SqlClient.SqlException) when (attempt < 60)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+        }
+    }
+#endif
 }
 #endif
