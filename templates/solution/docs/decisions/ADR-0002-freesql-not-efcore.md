@@ -21,3 +21,4 @@
 - FreeSql 没有 EF Core 的迁移工具链，因此自建 `db-script` / `migrate` 命令（DbUp）。
 - `DateTimeOffset` 在 SQLite 下不映射，Identity 的 `LockoutEnd` 以 `LockoutEndUtc` 列持久化。
 - 不使用 EF Core 的生态包（如 Aspire 的 EF 集成）。
+- 时间：所有时间字段是 UTC `DateTime`，在每种数据库中都存为不带时区的类型；读取时统一恢复为 `DateTimeKind.Utc`。PostgreSQL 为此开启 `Npgsql.EnableLegacyTimestampBehavior`（见 `FreeSqlFactory`），列类型为 `timestamp`。

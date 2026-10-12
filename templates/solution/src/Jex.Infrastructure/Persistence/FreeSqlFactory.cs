@@ -11,6 +11,16 @@ public static class FreeSqlFactory
 {
     public const string SoftDeleteFilterName = "SoftDelete";
 
+    // All timestamps are UTC DateTime stored without a time zone on every provider. Npgsql 6+ refuses to
+    // write a UTC DateTime into "timestamp without time zone", so keep its pre-6 behaviour. The switch is
+    // read once by Npgsql, so it must be set before the first connection; it is a no-op for other providers.
+    static FreeSqlFactory() => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+    /// <summary>Forces the static initialiser to run; call before any database access (startup, migrations).</summary>
+    public static void EnsureDriverDefaults()
+    {
+    }
+
     public static IFreeSql Create(DataType dataType, string connectionString, bool autoSyncStructure, ILogger? sqlLogger = null)
     {
         var builder = new FreeSqlBuilder()

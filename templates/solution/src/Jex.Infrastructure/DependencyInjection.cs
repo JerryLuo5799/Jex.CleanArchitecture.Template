@@ -24,6 +24,8 @@ public static class DependencyInjection
         IConfiguration configuration,
         Assembly migrationScriptsAssembly)
     {
+        FreeSqlFactory.EnsureDriverDefaults();
+
         services.AddSingleton(TimeProvider.System);
 
         services.AddOptions<DatabaseOptions>().BindConfiguration(DatabaseOptions.SectionName).ValidateDataAnnotations().ValidateOnStart();
