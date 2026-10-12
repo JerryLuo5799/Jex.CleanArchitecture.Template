@@ -23,6 +23,7 @@ task scaffold:feature ENTITY=Order PLURAL=Orders
 |---|---|
 | `task scaffold:entity ENTITY=Order PLURAL=Orders` | `dotnet new jex-entity -n Order --plural Orders --solution-name Acme -o .` |
 | `task scaffold:usecase USECASE=CancelOrder FEATURE=Orders TYPE=command WITH_ID=true` | `dotnet new jex-usecase -n CancelOrder --feature Orders --usecase-type command --with-id --solution-name Acme -o .` |
+| `task scaffold:usecase USECASE=GetOrdersWithPagination FEATURE=Orders TYPE=query RETURN=OrderDto PAGED=true` | `dotnet new jex-usecase -n GetOrdersWithPagination --feature Orders --usecase-type query --return-type OrderDto --paged --solution-name Acme -o .` |
 | `task scaffold:usecase USECASE=GetOrders FEATURE=Orders TYPE=query RETURN=List<OrderDto>` | `dotnet new jex-usecase -n GetOrders --feature Orders --usecase-type query --return-type "List<OrderDto>" --solution-name Acme -o .` |
 | `task scaffold:endpoint FEATURE=Reports` | `dotnet new jex-endpoint -n Reports --solution-name Acme -o .`（空端点组） |
 
@@ -34,6 +35,7 @@ task scaffold:feature ENTITY=Order PLURAL=Orders
 | `--usecase-type` / `-ut` | `command` | `command` 生成 Handler + Validator；`query` 生成 Handler |
 | `--return-type` / `-rt` | `Unit` | 结果类型；`Unit` 表示无返回（仅命令） |
 | `--with-id` / `-id` | `false` | 请求带 `long Id` 参数 |
+| `--paged` / `-pg` | `false` | 仅查询：继承 `PagedQuery`，返回 `PagedData<ReturnType>`，并生成 `PagedQueryValidator` |
 | `--include-test` / `-it` | `true` | 生成单元测试 |
 
 ### `jex-entity` 参数

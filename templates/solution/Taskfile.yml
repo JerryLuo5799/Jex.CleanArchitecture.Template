@@ -11,7 +11,7 @@ vars:
   SLN: Jex.slnx
   API: src/Jex.WebAPI
   TPL: TPLPREFIX
-  NAME: Jex
+  SOLUTION_NAME: Jex
   DBPROFILE: DB_PROFILE
 
 tasks:
@@ -108,7 +108,7 @@ tasks:
   db:script:
     desc: 'Generate the next migration from the entity model: task db:script NAME=add-orders'
     cmds:
-      - dotnet run --project {{.API}} --no-launch-profile -- db-script {{.NAME_ARG | default .MIGRATION | default "update"}} db/migrations
+      - dotnet run --project {{.API}} --no-launch-profile -- db-script {{.NAME | default "update"}}
 
   db:migrate:
     desc: Apply pending migrations to the configured database
@@ -125,17 +125,17 @@ tasks:
   scaffold:usecase:
     desc: 'task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long'
     cmds:
-      - dotnet new {{.TPL}}-usecase -n {{.USECASE}} --feature {{.FEATURE}} --usecase-type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --with-id {{.WITH_ID | default "false"}} --solution-name {{.NAME}} -o .
+      - dotnet new {{.TPL}}-usecase -n {{.USECASE}} --feature {{.FEATURE}} --usecase-type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --with-id {{.WITH_ID | default "false"}} --paged {{.PAGED | default "false"}} --solution-name {{.SOLUTION_NAME}} -o .
 
   scaffold:endpoint:
     desc: 'task scaffold:endpoint FEATURE=Orders [ENTITY=Order]'
     cmds:
-      - dotnet new {{.TPL}}-endpoint -n {{.FEATURE}}{{if .ENTITY}} --entity {{.ENTITY}}{{end}} --solution-name {{.NAME}} -o .
+      - dotnet new {{.TPL}}-endpoint -n {{.FEATURE}}{{if .ENTITY}} --entity {{.ENTITY}}{{end}} --solution-name {{.SOLUTION_NAME}} -o .
 
   scaffold:entity:
     desc: 'task scaffold:entity ENTITY=Order PLURAL=Orders'
     cmds:
-      - dotnet new {{.TPL}}-entity -n {{.ENTITY}} --plural {{.PLURAL}} --solution-name {{.NAME}} -o .
+      - dotnet new {{.TPL}}-entity -n {{.ENTITY}} --plural {{.PLURAL}} --solution-name {{.SOLUTION_NAME}} -o .
 
   scaffold:feature:
     desc: 'Entity + create/get use cases + endpoint group: task scaffold:feature ENTITY=Order PLURAL=Orders'

@@ -46,7 +46,9 @@ public sealed partial class MigrationScriptGenerator(
 
             var header = $"-- {next:0000}_{name} | generated {DateTime.UtcNow.ToString("u", CultureInfo.InvariantCulture)} | provider {database.Provider}\n" +
                          "-- Review before committing. Scripts run once, in order, journaled in SchemaVersions.\n\n";
-            File.WriteAllText(path, header + ddl.Trim() + "\n");
+            // FreeSql emits platform newlines and trailing spaces; normalise so scripts diff cleanly on every OS.
+            var body = string.Join("\n", ddl.Trim().ReplaceLineEndings("\n").Split('\n').Select(line => line.TrimEnd()));
+            File.WriteAllText(path, header + body + "\n");
 
             logger.LogInformation("Wrote migration {Path}", path);
             return path;

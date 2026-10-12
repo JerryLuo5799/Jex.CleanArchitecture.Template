@@ -54,23 +54,33 @@ Jex.Domain  ←  Jex.Application  ←  Jex.Infrastructure
 
 ## 4. 新增功能的标准流程（必须按顺序）
 
-以新增 `Order` 聚合为例。脚手架命令可一步生成可编译的骨架，再填充业务逻辑。
+以新增 `Order` 聚合为例。脚手架命令可一步生成可编译的骨架，再填充业务逻辑。每步给出 task 命令和等价的原生命令（在解决方案根目录运行；同名文件已存在时命令会失败，不会覆盖）。
 
 1. **实体**：`task scaffold:entity ENTITY=Order PLURAL=Orders`
+   原生：`dotnet new TPLPREFIX-entity -n Order --plural Orders --solution-name Jex -o .`
    → `Domain/Entities/Order.cs`（继承 `BaseAuditableEntity`；需要软删时实现 `ISoftDelete`）
    → `Application/Common/Interfaces/IOrderRepository.cs`、`Infrastructure/Persistence/Repositories/OrderRepository.cs`
    → `Infrastructure/Persistence/Configurations/OrderConfiguration.cs`（主键、长度、索引、导航）
-2. **用例**：`task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long`，
-   `task scaffold:usecase USECASE=GetOrderById FEATURE=Orders TYPE=query RETURN=OrderDto WITH_ID=true`
-   → 填充 Handler 业务逻辑与 Validator 规则。需要登录的请求加 `[AuthorizeRequest]`。
-3. **端点**：`task scaffold:endpoint FEATURE=Orders ENTITY=Order` → `WebAPI/Endpoints/Orders.cs`（映射 Create/GetById），
-   显式声明 `RoutePrefix => "/orders"`，处理方法必须是**具名静态方法**（不能用 lambda）。
+   → `Application/Features/Orders/OrderDto.cs`（多个用例共用的 Dto 放功能根目录；只给单个查询用的 Dto 与查询同文件）
+2. **用例**：`task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long`
+   原生：`dotnet new TPLPREFIX-usecase -n CreateOrder --feature Orders --usecase-type command --return-type long --solution-name Jex -o .`
+   按 Id 操作的用例加 `WITH_ID=true`（原生 `--with-id true`），如 `GetOrderById`（query，`RETURN=OrderDto`）、`UpdateOrder`、`DeleteOrder`；
+   分页查询加 `PAGED=true`（原生 `--paged true`），如 `GetOrdersWithPagination`（query，`RETURN=OrderDto`）。
+   → 填充 Handler 与 Validator。需要登录的请求加 `[AuthorizeRequest]`。照抄的模式：
+   - 更新：`GetByIdAsync` → 改字段 → `UpdateAsync`（`UpdateTodoItemCommand.cs`）；删除：`DeleteAsync`，`ISoftDelete` 实体自动软删（`DeleteTodoListCommand.cs`）
+   - 分页查询：继承 `PagedQuery`，Validator 继承 `PagedQueryValidator<T>`，返回 `PagedData<T>`（`GetTodoItemsWithPaginationQuery.cs`）
+   - 唯一性：Validator 里调用仓储检查 + 配置类里 `(业务键, DeletedToken)` 唯一索引（`CreateTodoListCommandValidator.cs`、`TodoConfigurations.cs`）
+   - 金额：`decimal` 在配置类里声明精度，如 `.Property(x => x.Price).Precision(18, 2)`
+3. **端点**：`task scaffold:endpoint FEATURE=Orders ENTITY=Order`
+   原生：`dotnet new TPLPREFIX-endpoint -n Orders --entity Order --solution-name Jex -o .`
+   → `WebAPI/Endpoints/Orders.cs`（映射 Create/GetById），显式声明 `RoutePrefix => "/orders"`，处理方法必须是**具名静态方法**（不能用 lambda）。
 4. **测试**：Handler/Validator 单元测试；端点集成测试（用 `CustomWebApplicationFactory.CreateAuthenticatedClient()`）。
-5. **迁移**：`task db:script NAME=add-orders` 生成 `db/migrations/000N_add-orders.sql`，审阅后提交。
-6. **验收**：`task check` 必须通过。
+5. **迁移**：`task db:script NAME=add-orders`
+   原生：`dotnet run --project src/Jex.WebAPI --no-launch-profile -- db-script add-orders`
+   → `db/migrations/000N_add-orders.sql`，审阅后提交。`db/migrations` 为空时，第一份脚本会包含**全部**现有表（初始迁移），这是预期结果；建议新项目在开发业务前先执行一次 `task db:script NAME=initial`，之后每份脚本只包含增量。
+6. **验收**：`task check` 必须通过。构建会重新生成根目录的 `openapi.json`（API 契约），有变化时一并提交。
 
 一键完成 1–3：`task scaffold:feature ENTITY=Order PLURAL=Orders`。
-等价的原生命令：`dotnet new TPLPREFIX-entity|TPLPREFIX-usecase|TPLPREFIX-endpoint`（在解决方案根目录运行，加 `--solution-name Jex`）。
 
 ## 5. 命名公式
 
@@ -160,14 +170,14 @@ Jex.Domain  ←  Jex.Application  ←  Jex.Infrastructure
 
 | 目的 | task | 原生命令 |
 |---|---|---|
-| 验收（格式+构建+测试） | `task check` | `dotnet format Jex.slnx && dotnet build Jex.slnx && dotnet test --solution Jex.slnx` |
+| 验收（格式+构建+测试） | `task check` | `dotnet format Jex.slnx --verify-no-changes && dotnet build Jex.slnx && dotnet test --solution Jex.slnx` |
 | CI 同等严格 | `task check:ci` | `dotnet build Jex.slnx -c Release -p:ContinuousIntegrationBuild=true` |
 | 只跑单元测试 | `task test:unit` | `dotnet test --project tests/Jex.UnitTests/Jex.UnitTests.csproj` |
 | 运行 API | `task run` | `dotnet run --project src/Jex.WebAPI` |
 | 热重载 | `task watch` | `dotnet watch --project src/Jex.WebAPI` |
 | 重置本地库 | `task db:reset` | 删除 `src/Jex.WebAPI/*.db` |
-| 生成迁移脚本 | `task db:script NAME=add-orders` | `dotnet run --project src/Jex.WebAPI -- db-script add-orders db/migrations` |
-| 执行迁移 | `task db:migrate` | `dotnet run --project src/Jex.WebAPI -- migrate` |
+| 生成迁移脚本 | `task db:script NAME=add-orders` | `dotnet run --project src/Jex.WebAPI --no-launch-profile -- db-script add-orders` |
+| 执行迁移 | `task db:migrate` | `dotnet run --project src/Jex.WebAPI --no-launch-profile -- migrate` |
 | 脚手架 | `task scaffold:feature ENTITY=Order PLURAL=Orders` | `dotnet new TPLPREFIX-entity ...`（见 §4） |
 <!--#if (IncludeDocker) -->
 | 本地基础设施 | `task infra:up` / `task infra:down` | `docker compose --profile DB_PROFILE up -d` |

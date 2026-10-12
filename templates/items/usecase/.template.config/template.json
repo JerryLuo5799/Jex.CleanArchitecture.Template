@@ -53,6 +53,12 @@
       "defaultValue": "false",
       "description": "Give the request a 'long Id' parameter (e.g. GetOrderById)."
     },
+    "Paged": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Query only: derive from PagedQuery, return PagedData<ReturnType> and add a PagedQueryValidator (e.g. GetOrdersWithPagination)."
+    },
     "IncludeTest": {
       "type": "parameter",
       "datatype": "bool",

@@ -137,7 +137,7 @@ tasks:
     desc: 'Scaffold a use case into the sandbox: task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long'
     dir: '{{.OUT}}'
     cmds:
-      - dotnet new jex-usecase -n {{.USECASE}} --feature {{.FEATURE}} --usecase-type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --with-id {{.WITH_ID | default "false"}} --solution-name {{.NAME}} -o .
+      - dotnet new jex-usecase -n {{.USECASE}} --feature {{.FEATURE}} --usecase-type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --with-id {{.WITH_ID | default "false"}} --paged {{.PAGED | default "false"}} --solution-name {{.NAME}} -o .
 
   scaffold:endpoint:
     desc: 'Scaffold an endpoint group into the sandbox: task scaffold:endpoint FEATURE=Orders'

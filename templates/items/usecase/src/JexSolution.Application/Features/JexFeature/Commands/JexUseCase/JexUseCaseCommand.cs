@@ -37,7 +37,12 @@ public sealed class JexUseCaseCommandHandler : IRequestHandler<JexUseCaseCommand
 {
     public Task Handle(JexUseCaseCommand request, CancellationToken cancellationToken)
     {
+#if (WithId)
+        // TODO: implement. Update: GetByIdAsync -> NotFoundException if null -> change fields -> UpdateAsync
+        // (UpdateTodoItemCommand). Delete: ExistsAsync -> DeleteAsync, soft-deleted for ISoftDelete (DeleteTodoListCommand).
+#else
         // TODO: implement.
+#endif
         return Task.CompletedTask;
     }
 }

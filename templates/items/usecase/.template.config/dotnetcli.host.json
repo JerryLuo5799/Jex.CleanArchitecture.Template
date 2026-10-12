@@ -6,10 +6,12 @@
     "UseCaseType": { "longName": "usecase-type", "shortName": "ut" },
     "ReturnType": { "longName": "return-type", "shortName": "rt" },
     "WithId": { "longName": "with-id", "shortName": "id" },
+    "Paged": { "longName": "paged", "shortName": "pg" },
     "IncludeTest": { "longName": "include-test", "shortName": "it" }
   },
   "usageExamples": [
     "-n CreateOrder --feature Orders --usecase-type command --return-type long --solution-name Acme -o .",
-    "-n GetOrderById --feature Orders --usecase-type query --return-type OrderDto --with-id --solution-name Acme -o ."
+    "-n GetOrderById --feature Orders --usecase-type query --return-type OrderDto --with-id --solution-name Acme -o .",
+    "-n GetOrdersWithPagination --feature Orders --usecase-type query --return-type OrderDto --paged --solution-name Acme -o ."
   ]
 }

@@ -80,6 +80,8 @@ foreach (var cell in cells)
         Run(output, "dotnet", ["new", "jex-entity", "-n", "Order", "--plural", "Orders", "--solution-name", safe, "-o", "."]);
         Run(output, "dotnet", ["new", "jex-usecase", "-n", "CreateOrder", "--feature", "Orders", "--usecase-type", "command", "--return-type", "long", "--solution-name", safe, "-o", "."]);
         Run(output, "dotnet", ["new", "jex-usecase", "-n", "GetOrderById", "--feature", "Orders", "--usecase-type", "query", "--return-type", "OrderDto", "--with-id", "--solution-name", safe, "-o", "."]);
+        Run(output, "dotnet", ["new", "jex-usecase", "-n", "GetOrdersWithPagination", "--feature", "Orders", "--usecase-type", "query", "--return-type", "OrderDto", "--paged", "--solution-name", safe, "-o", "."]);
+        Run(output, "dotnet", ["new", "jex-usecase", "-n", "DeleteOrder", "--feature", "Orders", "--usecase-type", "command", "--with-id", "--solution-name", safe, "-o", "."]);
         Run(output, "dotnet", ["new", "jex-endpoint", "-n", "Orders", "--entity", "Order", "--solution-name", safe, "-o", "."]);
 
         // Re-running a scaffold must refuse to overwrite.
@@ -92,6 +94,22 @@ foreach (var cell in cells)
         Run(output, "dotnet", ["format", slnx, "--verify-no-changes"]);
         Run(output, "dotnet", ["build", slnx, "-c", "Release", "-p:ContinuousIntegrationBuild=true"]);
         Run(output, "dotnet", ["test", "--solution", slnx, "-c", "Release", "--no-build"]);
+
+        // db-script against a temporary SQLite baseline: a relative output directory resolves against the
+        // solution root and the script is written with LF line endings and no trailing whitespace.
+        if (cell.Database == "sqlite")
+        {
+            Run(output, "dotnet", ["run", "--project", $"src/{safe}.WebAPI", "-c", "Release", "--no-build", "--no-launch-profile",
+                "--", "db-script", "initial", "db/migrations"]);
+            var script = Path.Combine(output, "db", "migrations", "0001_initial.sql");
+            var text = File.Exists(script)
+                ? File.ReadAllText(script)
+                : throw new InvalidOperationException($"db-script did not write {script}");
+            if (text.Contains('\r', StringComparison.Ordinal) || text.Split('\n').Any(line => line.EndsWith(' ')))
+            {
+                throw new InvalidOperationException("db-script output has CRLF or trailing whitespace");
+            }
+        }
 
         if (runDocker && cell.Docker && cell.DockerBuild)
         {

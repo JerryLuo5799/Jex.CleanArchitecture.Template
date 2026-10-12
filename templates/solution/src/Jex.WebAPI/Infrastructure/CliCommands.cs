@@ -47,7 +47,9 @@ public static class CliCommands
 
                 return (true, await RunAsync(app, "db-script", sp =>
                 {
-                    var output = args.Length > 2 ? args[2] : Path.Combine(app.Environment.ContentRootPath, "..", "..", "db", "migrations");
+                    // Relative paths are resolved against the solution root, not the API project directory.
+                    var solutionRoot = Path.Combine(app.Environment.ContentRootPath, "..", "..");
+                    var output = Path.Combine(solutionRoot, args.Length > 2 ? args[2] : Path.Combine("db", "migrations"));
                     var path = sp.GetRequiredService<MigrationScriptGenerator>().Generate(args[1], Path.GetFullPath(output));
                     if (path is null)
                     {
