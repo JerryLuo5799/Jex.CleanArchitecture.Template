@@ -21,6 +21,7 @@ public static class OpenApiGeneration
     public static IReadOnlyDictionary<string, string?> PlaceholderConfiguration { get; } = new Dictionary<string, string?>
     {
         ["Jwt:Secret"] = "openapi-generation-placeholder-secret-0000",
+        ["Database:Provider"] = "Sqlite",
         ["Database:AutoSyncStructure"] = "false",
         ["ConnectionStrings:DefaultConnection"] = "Data Source=:memory:",
         ["Cors:AllowedOrigins:0"] = "*",

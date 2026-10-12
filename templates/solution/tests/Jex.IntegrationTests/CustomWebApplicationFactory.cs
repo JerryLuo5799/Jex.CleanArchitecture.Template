@@ -2,12 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using Jex.IntegrationTests.Database;
 
 namespace Jex.IntegrationTests;
 
 /// <summary>
-/// Boots the API against an isolated SQLite file database (one per factory instance) with a
-/// known JWT secret so tests can mint tokens without a login round-trip.
+/// Boots the API against an isolated test database (one per factory instance, see <see cref="ITestDatabase"/>)
+/// with a known JWT secret so tests can mint tokens without a login round-trip.
 /// </summary>
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -15,7 +16,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public const string TestJwtIssuer = "Jex";
     public const string TestJwtAudience = "Jex";
 
-    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"TPLNAMELOWER_test_{Guid.NewGuid():N}.db");
+    private readonly ITestDatabase _database = TestDatabase.Create();
     private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<Action<IServiceCollection>> _configureServices = [];
 
@@ -41,8 +42,8 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
-        builder.UseSetting("ConnectionStrings:DefaultConnection", $"Data Source={_dbPath}");
-        builder.UseSetting("Database:Provider", "Sqlite");
+        builder.UseSetting("ConnectionStrings:DefaultConnection", _database.ConnectionString);
+        builder.UseSetting("Database:Provider", _database.Provider);
         builder.UseSetting("Database:AutoSyncStructure", "true");
 
         builder.UseSetting("Jwt:Secret", TestJwtSecret);
@@ -103,16 +104,9 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        foreach (var path in new[] { _dbPath, _dbPath + "-shm", _dbPath + "-wal" })
+        if (disposing)
         {
-            try
-            {
-                File.Delete(path);
-            }
-            catch (IOException)
-            {
-                // SQLite may still hold the file briefly; the OS temp folder is cleaned eventually.
-            }
+            _database.Dispose();
         }
     }
 }

@@ -86,10 +86,22 @@ public sealed class DbUpMigrator(DatabaseOptions database, string connectionStri
             : builder.WithTransactionPerScript();
     }
 
+    // One provider branch is kept by the template's --database option (the others are removed on generation).
     private static UpgradeEngineBuilder CreateForProvider(DataType dataType, string connectionString) =>
         dataType switch
         {
+#if (UseSqlite)
             DataType.Sqlite => DeployChanges.To.SqliteDatabase(connectionString),
+#endif
+#if (UsePostgreSQL)
+            DataType.PostgreSQL => DeployChanges.To.PostgresqlDatabase(connectionString),
+#endif
+#if (UseSqlServer)
+            DataType.SqlServer => DeployChanges.To.SqlDatabase(connectionString),
+#endif
+#if (UseMySql)
+            DataType.MySql => DeployChanges.To.MySqlDatabase(connectionString),
+#endif
             _ => throw new NotSupportedException($"No DbUp provider is configured for '{dataType}'. Add the matching dbup-* package and a case here."),
         };
 

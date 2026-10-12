@@ -63,3 +63,9 @@ nunit-*.xml
 *.db-wal
 logs/
 TestResults/
+
+# Local secrets for docker compose
+.env
+
+# Local development database (template source)
+dev.db*

@@ -30,7 +30,7 @@ try
 
     var app = builder.Build();
 
-    var (handled, exitCode) = await DatabaseCommands.TryRunAsync(app, args);
+    var (handled, exitCode) = await CliCommands.TryRunAsync(app, args);
     if (handled)
     {
         return exitCode;

@@ -134,7 +134,7 @@ foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirecto
         break;
     }
 
-    foreach (var token in new[] { "TPLPREFIX", "TPLNAMELOWER", "DB_PROFILE", "FREESQL_PROVIDER" })
+    foreach (var token in new[] { "TPLPREFIX", "TPLNAMELOWER", "DB_PROFILE", "FREESQL_PROVIDER", "TPLCONN_PREFIX", "TPLCONN_SUFFIX", "TemplateSourceOnly" })
     {
         if (content.Contains(token, StringComparison.Ordinal))
         {

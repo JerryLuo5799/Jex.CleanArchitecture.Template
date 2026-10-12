@@ -8,15 +8,40 @@
   <ItemGroup>
     <PackageReference Include="FreeSql" />
     <PackageReference Include="FreeSql.DbContext" />
-    <PackageReference Include="FreeSql.Provider.Sqlite" />
     <PackageReference Include="dbup-core" />
-    <PackageReference Include="dbup-sqlite" />
-    <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
+
+  <!-- Exactly one database provider (FreeSql + DbUp) is selected by the template's database option. -->
+  <!--#if (UseSqlite) -->
+  <ItemGroup>
+    <PackageReference Include="FreeSql.Provider.Sqlite" />
+    <PackageReference Include="dbup-sqlite" />
+    <!-- dbup-sqlite depends on Microsoft.Data.Sqlite.Core; the full package brings the native SQLite bundle and initialises it. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UsePostgreSQL) -->
+  <ItemGroup>
+    <PackageReference Include="FreeSql.Provider.PostgreSQL" />
+    <PackageReference Include="dbup-postgresql" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UseSqlServer) -->
+  <ItemGroup>
+    <PackageReference Include="FreeSql.Provider.SqlServer" />
+    <PackageReference Include="dbup-sqlserver" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UseMySql) -->
+  <ItemGroup>
+    <PackageReference Include="FreeSql.Provider.MySqlConnector" />
+    <PackageReference Include="dbup-mysql" />
+  </ItemGroup>
+  <!--#endif -->
 
 </Project>

@@ -21,6 +21,13 @@
     <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
+  <!--#if (TemplateSourceOnly) -->
+  <!-- Template source only (removed on generation): the C# "#if (UseSqlite)" blocks compile as the SQLite flavour here. -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);UseSqlite</DefineConstants>
+  </PropertyGroup>
+  <!--#endif -->
+
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" Link="BannedSymbols.txt" />

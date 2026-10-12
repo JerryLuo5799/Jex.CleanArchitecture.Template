@@ -59,6 +59,51 @@
     "UsePostgreSQL": { "type": "computed", "value": "(database == \"postgresql\")" },
     "UseSqlServer": { "type": "computed", "value": "(database == \"sqlserver\")" },
     "UseMySql": { "type": "computed", "value": "(database == \"mysql\")" },
+    "DatabaseProviderName": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "FREESQL_PROVIDER",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": "PostgreSQL" },
+          { "condition": "(UseSqlServer)", "value": "SqlServer" },
+          { "condition": "(UseMySql)", "value": "MySql" },
+          { "condition": "(true)", "value": "Sqlite" }
+        ]
+      }
+    },
+    "ConnectionPrefix": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "TPLCONN_PREFIX",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": "Host=localhost;Port=5432;Database=" },
+          { "condition": "(UseSqlServer)", "value": "Server=localhost,1433;Database=" },
+          { "condition": "(UseMySql)", "value": "Server=localhost;Port=3306;Database=" },
+          { "condition": "(true)", "value": "Data Source=" }
+        ]
+      }
+    },
+    "ConnectionSuffix": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "TPLCONN_SUFFIX",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": ";Username=postgres;Password=postgres" },
+          { "condition": "(UseSqlServer)", "value": ";User Id=sa;Password=Your_password123;TrustServerCertificate=True" },
+          { "condition": "(UseMySql)", "value": ";Uid=root;Pwd=root;" },
+          { "condition": "(true)", "value": ".db" }
+        ]
+      }
+    },
     "DatabaseProfile": {
       "type": "generated",
       "generator": "switch",
@@ -202,6 +247,10 @@
       ],
       "modifiers": [
         {
+          "condition": "(UseSqlite)",
+          "exclude": [ "tests/Jex.IntegrationTests/Database/ContainerTestDatabase.cs" ]
+        },
+        {
           "condition": "(!UseAspire)",
           "exclude": [ "src/Jex.AppHost/**" ]
         },
@@ -230,6 +279,22 @@
     }
   ],
   "SpecialCustomOperations": {
+    "**/*.json": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "//#if" ],
+            "else": [ "//#else" ],
+            "elseif": [ "//#elseif" ],
+            "endif": [ "//#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
     "**/*.slnx": {
       "operations": [
         {
@@ -262,7 +327,7 @@
         }
       ]
     },
-    "**/*.{yml,yaml,http,txt,gitignore,dockerignore}": {
+    "**/*.{yml,yaml,http,txt,gitignore,dockerignore,sql,example}": {
       "operations": [
         {
           "type": "conditional",
