@@ -1,5 +1,4 @@
 using Jex.Application.Common;
-using Microsoft.AspNetCore.Authorization.Policy;
 
 namespace Jex.WebAPI.Infrastructure;
 

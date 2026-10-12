@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "JerryLuo",
+  "classifications": [ "Clean Architecture", "CQRS", "Item" ],
+  "identity": "Jex.CleanArchitecture.UseCase",
+  "groupIdentity": "Jex.CleanArchitecture.UseCase",
+  "name": "Jex Use Case (command or query)",
+  "description": "Adds a command (+ handler + validator) or a query (+ handler) with unit tests to a Jex solution. Run from the solution root.",
+  "shortName": "jex-usecase",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "JexUseCase",
+  "preferNameDirectory": false,
+  "symbols": {
+    "SolutionName": {
+      "type": "parameter",
+      "datatype": "text",
+      "isRequired": true,
+      "replaces": "JexSolution",
+      "fileRename": "JexSolution",
+      "description": "Solution / root namespace, e.g. Acme.Shop (the Taskfile fills this in)."
+    },
+    "FeatureName": {
+      "type": "parameter",
+      "datatype": "text",
+      "isRequired": true,
+      "replaces": "JexFeature",
+      "fileRename": "JexFeature",
+      "description": "Feature folder (plural), e.g. Orders."
+    },
+    "UseCaseType": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "command",
+      "choices": [
+        { "choice": "command", "description": "State change (ICommand), with handler and validator." },
+        { "choice": "query", "description": "Read (IQuery), with handler." }
+      ],
+      "description": "Command or query."
+    },
+    "ReturnType": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "Unit",
+      "replaces": "JexReturnType",
+      "description": "Result type, e.g. long or OrderDto. 'Unit' means no result (commands only)."
+    },
+    "WithId": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Give the request a 'long Id' parameter (e.g. GetOrderById)."
+    },
+    "IncludeTest": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Also generate unit tests."
+    },
+    "IsCommand": {
+      "type": "computed",
+      "value": "(UseCaseType == \"command\")"
+    },
+    "IsQuery": {
+      "type": "computed",
+      "value": "(UseCaseType == \"query\")"
+    },
+    "HasReturn": {
+      "type": "computed",
+      "value": "(ReturnType != \"Unit\")"
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [ ".template.config/**" ],
+      "modifiers": [
+        {
+          "condition": "(!IsCommand)",
+          "exclude": [
+            "src/JexSolution.Application/Features/JexFeature/Commands/**",
+            "tests/JexSolution.UnitTests/Features/JexFeature/JexUseCaseCommandTests.cs"
+          ]
+        },
+        {
+          "condition": "(!IsQuery)",
+          "exclude": [
+            "src/JexSolution.Application/Features/JexFeature/Queries/**",
+            "tests/JexSolution.UnitTests/Features/JexFeature/JexUseCaseQueryTests.cs"
+          ]
+        },
+        {
+          "condition": "(!IncludeTest)",
+          "exclude": [ "tests/**" ]
+        }
+      ]
+    }
+  ],
+  "postActions": [
+    {
+      "description": "Next steps",
+      "manualInstructions": [
+        { "text": "Fill in the request fields, handler logic and validator rules, then run 'task check'. See AGENTS.md section 4." }
+      ],
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "continueOnError": true
+    }
+  ]
+}

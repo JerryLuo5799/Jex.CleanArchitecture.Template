@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "JerryLuo",
+  "classifications": [ "Clean Architecture", "Minimal API", "Item" ],
+  "identity": "Jex.CleanArchitecture.Endpoint",
+  "groupIdentity": "Jex.CleanArchitecture.Endpoint",
+  "name": "Jex Endpoint Group",
+  "description": "Adds an IEndpointGroup (auto-discovered, mapped under /api/{feature}) and, with --entity, Create/GetById endpoints plus integration tests. Run from the solution root.",
+  "shortName": "jex-endpoint",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "JexFeature",
+  "preferNameDirectory": false,
+  "symbols": {
+    "SolutionName": {
+      "type": "parameter",
+      "datatype": "text",
+      "isRequired": true,
+      "replaces": "JexSolution",
+      "fileRename": "JexSolution",
+      "description": "Solution / root namespace, e.g. Acme.Shop (the Taskfile fills this in)."
+    },
+    "EntityName": {
+      "type": "parameter",
+      "datatype": "text",
+      "defaultValue": "",
+      "replaces": "JexEntity",
+      "description": "Optional entity name. When set, maps Create{Entity} and Get{Entity}ById (generate them with jex-usecase first)."
+    },
+    "IncludeTest": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Also generate integration tests (requires --entity)."
+    },
+    "HasEntity": {
+      "type": "computed",
+      "value": "(EntityName != \"\")"
+    },
+    "RouteSegment": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lowerCase",
+      "replaces": "TPLROUTE",
+      "description": "Lower-case route prefix derived from the group name."
+    }
+  },
+  "forms": {
+    "lowerCase": {
+      "identifier": "lowerCase"
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [ ".template.config/**" ],
+      "modifiers": [
+        {
+          "condition": "(!IncludeTest || !HasEntity)",
+          "exclude": [ "tests/**" ]
+        }
+      ]
+    }
+  ]
+}

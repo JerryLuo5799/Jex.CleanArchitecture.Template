@@ -125,12 +125,12 @@ tasks:
   scaffold:usecase:
     desc: 'task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long'
     cmds:
-      - dotnet new {{.TPL}}-usecase -n {{.USECASE}} --feature {{.FEATURE}} --type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --solution-name {{.NAME}} -o .
+      - dotnet new {{.TPL}}-usecase -n {{.USECASE}} --feature {{.FEATURE}} --usecase-type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --with-id {{.WITH_ID | default "false"}} --solution-name {{.NAME}} -o .
 
   scaffold:endpoint:
-    desc: 'task scaffold:endpoint FEATURE=Orders'
+    desc: 'task scaffold:endpoint FEATURE=Orders [ENTITY=Order]'
     cmds:
-      - dotnet new {{.TPL}}-endpoint -n {{.FEATURE}} --solution-name {{.NAME}} -o .
+      - dotnet new {{.TPL}}-endpoint -n {{.FEATURE}}{{if .ENTITY}} --entity {{.ENTITY}}{{end}} --solution-name {{.NAME}} -o .
 
   scaffold:entity:
     desc: 'task scaffold:entity ENTITY=Order PLURAL=Orders'
@@ -145,6 +145,6 @@ tasks:
       - task: scaffold:usecase
         vars: { USECASE: 'Create{{.ENTITY}}', FEATURE: '{{.PLURAL}}', TYPE: command, RETURN: long }
       - task: scaffold:usecase
-        vars: { USECASE: 'Get{{.ENTITY}}ById', FEATURE: '{{.PLURAL}}', TYPE: query, RETURN: '{{.ENTITY}}Dto' }
+        vars: { USECASE: 'Get{{.ENTITY}}ById', FEATURE: '{{.PLURAL}}', TYPE: query, RETURN: '{{.ENTITY}}Dto', WITH_ID: 'true' }
       - task: scaffold:endpoint
-        vars: { FEATURE: '{{.PLURAL}}' }
+        vars: { FEATURE: '{{.PLURAL}}', ENTITY: '{{.ENTITY}}' }

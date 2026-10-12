@@ -1,5 +1,4 @@
 using Jex.Application.Common.Interfaces;
-using MediatR.Pipeline;
 
 namespace Jex.Application.Common.Behaviours;
 

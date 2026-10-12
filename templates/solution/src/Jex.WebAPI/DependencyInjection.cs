@@ -8,8 +8,6 @@ using Jex.Infrastructure.Identity;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Options;
 using Jex.WebAPI.Services;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Jex.WebAPI;
 

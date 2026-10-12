@@ -61,9 +61,9 @@ Jex.Domain  ←  Jex.Application  ←  Jex.Infrastructure
    → `Application/Common/Interfaces/IOrderRepository.cs`、`Infrastructure/Persistence/Repositories/OrderRepository.cs`
    → `Infrastructure/Persistence/Configurations/OrderConfiguration.cs`（主键、长度、索引、导航）
 2. **用例**：`task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long`，
-   `task scaffold:usecase USECASE=GetOrderById FEATURE=Orders TYPE=query RETURN=OrderDto`
+   `task scaffold:usecase USECASE=GetOrderById FEATURE=Orders TYPE=query RETURN=OrderDto WITH_ID=true`
    → 填充 Handler 业务逻辑与 Validator 规则。需要登录的请求加 `[AuthorizeRequest]`。
-3. **端点**：`task scaffold:endpoint FEATURE=Orders` → `WebAPI/Endpoints/Orders.cs`，
+3. **端点**：`task scaffold:endpoint FEATURE=Orders ENTITY=Order` → `WebAPI/Endpoints/Orders.cs`（映射 Create/GetById），
    显式声明 `RoutePrefix => "/orders"`，处理方法必须是**具名静态方法**（不能用 lambda）。
 4. **测试**：Handler/Validator 单元测试；端点集成测试（用 `CustomWebApplicationFactory.CreateAuthenticatedClient()`）。
 5. **迁移**：`task db:script NAME=add-orders` 生成 `db/migrations/000N_add-orders.sql`，审阅后提交。

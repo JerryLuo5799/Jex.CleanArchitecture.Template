@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "SolutionName": { "longName": "solution-name", "shortName": "sn" },
+    "FeatureName": { "longName": "feature", "shortName": "f" },
+    "UseCaseType": { "longName": "usecase-type", "shortName": "ut" },
+    "ReturnType": { "longName": "return-type", "shortName": "rt" },
+    "WithId": { "longName": "with-id", "shortName": "id" },
+    "IncludeTest": { "longName": "include-test", "shortName": "it" }
+  },
+  "usageExamples": [
+    "-n CreateOrder --feature Orders --usecase-type command --return-type long --solution-name Acme -o .",
+    "-n GetOrderById --feature Orders --usecase-type query --return-type OrderDto --with-id --solution-name Acme -o ."
+  ]
+}
