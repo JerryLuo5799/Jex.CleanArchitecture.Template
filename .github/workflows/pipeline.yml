@@ -1,0 +1,30 @@
+# Single entry point for pull requests, pushes to main and manual runs:
+# ci (check + pack) -> template-tests (verify that same nupkg). Both reusable workflows run inside
+# this one run, so the matrix always downloads the artifact that was just built.
+name: pipeline
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    with:
+      version: 0.0.0-ci.${{ github.run_number }}
+
+  template-tests:
+    needs: ci
+    uses: ./.github/workflows/template-tests.yml
+    with:
+      artifact-name: ${{ needs.ci.outputs.artifact-name }}

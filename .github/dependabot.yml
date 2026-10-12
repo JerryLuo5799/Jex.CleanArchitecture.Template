@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /templates/solution
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [ minor, patch ]
+    ignore:
+      # Commercial licences from these major versions on; staying on the last OSS major is deliberate.
+      - dependency-name: MediatR
+        versions: [ ">= 13.0.0" ]
+      - dependency-name: FluentAssertions
+        versions: [ ">= 8.0.0" ]
+      - dependency-name: AutoMapper
+        versions: [ ">= 15.0.0" ]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
