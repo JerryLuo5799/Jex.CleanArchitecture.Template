@@ -153,7 +153,9 @@ public static class DependencyInjection
 
     private static void AddOpenApi(IServiceCollection services)
     {
-        services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
+        services.AddOpenApi(options => options
+            .AddDocumentTransformer<BearerSecuritySchemeTransformer>()
+            .AddDocumentTransformer<LineEndingNormalizationTransformer>());
     }
 
     private static string ClientIp(HttpContext context)

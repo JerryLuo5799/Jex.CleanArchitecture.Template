@@ -614,7 +614,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfIReadOnlyListOfTodoItemBriefDto": {
         "type": "object",
@@ -670,7 +670,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfIReadOnlyListOfUserDto": {
         "type": "object",
@@ -726,7 +726,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfLoginResponse": {
         "type": "object",
@@ -783,7 +783,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfObject": {
         "type": "object",
@@ -832,7 +832,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfPurgedResponse": {
         "type": "object",
@@ -889,7 +889,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfTodosVm": {
         "type": "object",
@@ -946,7 +946,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "ApiResponseOfUserDto": {
         "type": "object",
@@ -1003,7 +1003,7 @@
             "description": "Validation errors grouped by member name. Only present for code 4000."
           }
         },
-        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
       "CreatedResponse": {
         "required": [
@@ -1098,7 +1098,7 @@
             "type": "string"
           }
         },
-        "description": "Authenticates a user and returns a JWT access token. Not transactional: a failed attempt must\r\nstill persist the lockout counter even though the command throws."
+        "description": "Authenticates a user and returns a JWT access token. Not transactional: a failed attempt must\nstill persist the lockout counter even though the command throws."
       },
       "LoginResponse": {
         "required": [
@@ -1425,7 +1425,7 @@
             ]
           }
         },
-        "description": "Public user DTO. Password hash and internal Identity fields (stamps, lockout) are never exposed.\r\nMapping is hand-written (see ADR-0009): keep UserDto UserDto.From(User user) next to the DTO."
+        "description": "Public user DTO. Password hash and internal Identity fields (stamps, lockout) are never exposed.\nMapping is hand-written (see ADR-0009): keep UserDto UserDto.From(User user) next to the DTO."
       },
       "UserStatus": {
         "type": "integer"
