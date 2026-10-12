@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Jex.Application\Jex.Application.csproj" />
     <ProjectReference Include="..\Jex.Infrastructure\Jex.Infrastructure.csproj" />
+    <ProjectReference Include="..\Jex.ServiceDefaults\Jex.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

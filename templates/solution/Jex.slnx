@@ -10,7 +10,11 @@
     <Project Path="src/Jex.Domain/Jex.Domain.csproj" />
     <Project Path="src/Jex.Application/Jex.Application.csproj" />
     <Project Path="src/Jex.Infrastructure/Jex.Infrastructure.csproj" />
+    <Project Path="src/Jex.ServiceDefaults/Jex.ServiceDefaults.csproj" />
     <Project Path="src/Jex.WebAPI/Jex.WebAPI.csproj" />
+    <!--#if (UseAspire) -->
+    <Project Path="src/Jex.AppHost/Jex.AppHost.csproj" />
+    <!--#endif -->
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Jex.UnitTests/Jex.UnitTests.csproj" />

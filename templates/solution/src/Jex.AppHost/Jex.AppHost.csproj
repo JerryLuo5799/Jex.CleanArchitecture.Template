@@ -1,0 +1,28 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.1">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>b2a9f1d4-5c6e-4f7a-8b9c-0d1e2f3a4b5c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jex.WebAPI\Jex.WebAPI.csproj" />
+  </ItemGroup>
+
+  <!--#if (UsePostgreSQL) -->
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UseSqlServer) -->
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.SqlServer" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UseMySql) -->
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.MySql" />
+  </ItemGroup>
+  <!--#endif -->
+
+</Project>

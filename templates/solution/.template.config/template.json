@@ -380,7 +380,9 @@
     { "path": "src/Jex.Domain/Jex.Domain.csproj" },
     { "path": "src/Jex.Application/Jex.Application.csproj" },
     { "path": "src/Jex.Infrastructure/Jex.Infrastructure.csproj" },
+    { "path": "src/Jex.ServiceDefaults/Jex.ServiceDefaults.csproj" },
     { "path": "src/Jex.WebAPI/Jex.WebAPI.csproj" },
+    { "path": "src/Jex.AppHost/Jex.AppHost.csproj", "condition": "(UseAspire)" },
     { "path": "tests/Jex.UnitTests/Jex.UnitTests.csproj" },
     { "path": "tests/Jex.IntegrationTests/Jex.IntegrationTests.csproj" },
     { "path": "tests/Jex.ArchitectureTests/Jex.ArchitectureTests.csproj" }

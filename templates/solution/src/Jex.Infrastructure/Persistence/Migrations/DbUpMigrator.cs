@@ -86,6 +86,21 @@ public sealed class DbUpMigrator(DatabaseOptions database, string connectionStri
             : builder.WithTransactionPerScript();
     }
 
+    /// <summary>True when this build contains a DbUp provider for <paramref name="dataType"/> (only the project's own provider is referenced).</summary>
+    public static bool Supports(DataType dataType) =>
+#if (UseSqlite)
+        dataType == DataType.Sqlite;
+#endif
+#if (UsePostgreSQL)
+        dataType == DataType.PostgreSQL;
+#endif
+#if (UseSqlServer)
+        dataType == DataType.SqlServer;
+#endif
+#if (UseMySql)
+        dataType == DataType.MySql;
+#endif
+
     // One provider branch is kept by the template's --database option (the others are removed on generation).
     private static UpgradeEngineBuilder CreateForProvider(DataType dataType, string connectionString) =>
         dataType switch

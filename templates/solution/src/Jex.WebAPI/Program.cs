@@ -1,6 +1,7 @@
 using Jex.Application;
 using Jex.Application.Common;
 using Jex.Infrastructure;
+using Jex.ServiceDefaults;
 using Jex.WebAPI;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Middleware;
@@ -22,7 +23,9 @@ try
     }
 
     builder.Logging.ClearProviders();
+    // Order matters: clear the defaults, add NLog, then ServiceDefaults adds OpenTelemetry next to it.
     builder.Host.UseNLog();
+    builder.AddServiceDefaults();
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration, typeof(Program).Assembly);

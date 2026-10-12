@@ -13,6 +13,10 @@ public sealed class MigrationTests(CustomWebApplicationFactory factory) : IClass
     [Fact]
     public void GenerateThenMigrate_EmptyDatabase_CreatesSchemaOnce()
     {
+        // This end-to-end check uses throw-away SQLite files; other providers need a scratch server
+        // (Migration:BaselineConnection) and are exercised by `task db:script` against real infrastructure.
+        Assert.SkipUnless(DbUpMigrator.Supports(FreeSql.DataType.Sqlite), "Project provider is not SQLite.");
+
         using var scope = factory.Services.CreateScope();
         var generator = scope.ServiceProvider.GetRequiredService<MigrationScriptGenerator>();
         var migrator = scope.ServiceProvider.GetRequiredService<DbUpMigrator>();
@@ -40,6 +44,8 @@ public sealed class MigrationTests(CustomWebApplicationFactory factory) : IClass
     [Fact]
     public void Generate_InvalidName_Throws()
     {
+        Assert.SkipUnless(DbUpMigrator.Supports(FreeSql.DataType.Sqlite), "Project provider is not SQLite.");
+
         using var scope = factory.Services.CreateScope();
         var generator = scope.ServiceProvider.GetRequiredService<MigrationScriptGenerator>();
 

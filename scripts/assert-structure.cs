@@ -70,7 +70,7 @@ Exists(".template.config", false, "template metadata must not be emitted");
 
 // ── Optional feature files ──────────────────────────────────────────────────
 Exists($"src/{name}.AppHost", aspire, "--use-aspire");
-// ServiceDefaults is added in the Aspire phase; assertion enabled there.
+Exists($"src/{name}.ServiceDefaults", true, "ServiceDefaults is always generated");
 Exists("AGENTS.md", aiDocs, "--include-ai-docs");
 Exists("CLAUDE.md", aiDocs, "--include-ai-docs");
 Exists(".claude/settings.json", aiDocs, "--include-ai-docs");
