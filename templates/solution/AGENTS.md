@@ -191,6 +191,7 @@ Jex.Domain  ←  Jex.Application  ←  Jex.Infrastructure
 | `dotnet format --verify-no-changes` 报 IMPORTS | 源文件里 `using` 了第三方命名空间 | 移到项目的 `GlobalUsings.cs` |
 | 更新实体后所有列都被写了一遍 | 实体不是从同一个仓储加载的 | 先 `GetByIdAsync` 再改字段再 `UpdateAsync` |
 | 登录返回 4010 但密码正确 | 账户被锁定（5 次失败锁 15 分钟）或 `Status != Active` | 等待或在开发库里重置 |
+| `docker compose` / `dotnet run` 报端口 "access permissions" 或 10013 | Windows 把该端口划入了 Hyper-V/WSL 保留范围（`netsh interface ipv4 show excludedportrange protocol=tcp`） | 在 `.env` 改 `POSTGRES_PORT` 等端口并同步连接串；API 端口改 `launchSettings.json` |
 
 ## 12. 架构决策记录（ADR）
 
