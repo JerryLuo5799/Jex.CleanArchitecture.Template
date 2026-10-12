@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Jex.Application.Features.Auth.Commands.Login;
 
 public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>

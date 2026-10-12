@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Jex.Application.Features.Users.Queries.GetUsers;
 
 public sealed class GetUsersQueryValidator : AbstractValidator<GetUsersQuery>

@@ -1,5 +1,4 @@
 using Jex.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 
 namespace Jex.Infrastructure.Identity;
 

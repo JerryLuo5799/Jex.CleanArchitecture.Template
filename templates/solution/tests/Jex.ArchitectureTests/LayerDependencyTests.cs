@@ -2,7 +2,6 @@ using System.Reflection;
 using Jex.Application.Common.Interfaces;
 using Jex.Domain.Entities;
 using Jex.Infrastructure.Persistence.Repositories;
-using NetArchTest.Rules;
 
 namespace Jex.ArchitectureTests;
 

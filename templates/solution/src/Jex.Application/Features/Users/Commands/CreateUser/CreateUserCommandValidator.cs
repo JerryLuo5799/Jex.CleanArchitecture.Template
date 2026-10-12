@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Jex.Application.Features.Users.Commands.CreateUser;
 
 public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>

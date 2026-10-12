@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace Jex.Application.Features.Users.Commands.UpdateUser;
 
 public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>

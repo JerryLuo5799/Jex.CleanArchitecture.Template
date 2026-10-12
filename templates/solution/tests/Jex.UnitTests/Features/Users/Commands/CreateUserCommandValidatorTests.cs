@@ -1,4 +1,3 @@
-using FluentValidation.TestHelper;
 using Jex.Application.Features.Users.Commands.CreateUser;
 
 namespace Jex.UnitTests.Features.Users.Commands;

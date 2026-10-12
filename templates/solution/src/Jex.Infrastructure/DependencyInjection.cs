@@ -2,9 +2,6 @@ using Jex.Application.Common.Interfaces;
 using Jex.Domain.Entities;
 using Jex.Infrastructure.Identity;
 using Jex.Infrastructure.Persistence.Repositories;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Jex.Infrastructure;
 

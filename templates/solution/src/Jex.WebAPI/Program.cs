@@ -6,15 +6,11 @@ using Jex.WebAPI;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Middleware;
 using Jex.WebAPI.Models;
-using Microsoft.AspNetCore.Diagnostics;
-using NLog;
-using NLog.Web;
 
 // NLog is configured from the "NLog" section of appsettings*.json so the same file drives
 // logging, environment overrides and template conditions.
-var logger = LogManager.Setup()
-    .LoadConfigurationFromAppSettings()
-    .GetCurrentClassLogger();
+NLog.LogManager.Setup().LoadConfigurationFromAppSettings();
+var logger = NLog.LogManager.GetCurrentClassLogger();
 
 try
 {

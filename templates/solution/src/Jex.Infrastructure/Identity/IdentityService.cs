@@ -2,7 +2,6 @@ using Jex.Application.Common.Exceptions;
 using Jex.Application.Common.Interfaces;
 using Jex.Domain.Entities;
 using Jex.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Jex.Infrastructure.Identity;
 

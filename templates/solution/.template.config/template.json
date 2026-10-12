@@ -1,34 +1,259 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "JerryLuo",
-  "classifications": [
-    "Web",
-    "API",
-    "Clean Architecture"
-  ],
-  "identity": "Jex.CleanArchitecture.Template",
-  "name": "Jex Clean Architecture",
+  "classifications": [ "Web", "API", "Clean Architecture", "CQRS", "Minimal API" ],
+  "identity": "Jex.CleanArchitecture.Solution",
+  "groupIdentity": "Jex.CleanArchitecture",
+  "name": "Jex Clean Architecture Solution",
   "shortName": "jex",
-  "description": "A lightweight, opinionated Clean Architecture template for .NET 10 with CQRS, FreeSQL, JWT authentication, and built-in tests.",
+  "description": "Clean Architecture Web API for .NET 10: Minimal API endpoint groups, MediatR CQRS, FluentValidation, FreeSql Code First, JWT auth, tests, Docker, optional Aspire, and AGENTS.md for AI-assisted development.",
   "tags": {
     "language": "C#",
     "type": "solution"
   },
-  "sourceName": "Jex",
+  "_renaming": "No sourceName: NameSafe (safe_namespace form of --name) drives both file renames and content so folders and namespaces always agree, even for names such as my-api.",
   "preferNameDirectory": true,
-  "symbols": {
-    "Framework": {
-      "type": "parameter",
-      "description": "The target framework for the project.",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "net10.0",
-          "description": ".NET 10"
-        }
-      ],
-      "defaultValue": "net10.0",
-      "replaces": "net10.0"
+  "constraints": {
+    "dotnet-sdk": {
+      "type": "sdk-version",
+      "args": "[10.0,)"
     }
-  }
+  },
+  "guids": [
+    "8f3c2d5e-1b4a-4c6d-9e7f-0a1b2c3d4e5f",
+    "3c7b3c0a-6e3f-4d6d-9d2a-7f4e2b1c8a90",
+    "b2a9f1d4-5c6e-4f7a-8b9c-0d1e2f3a4b5c"
+  ],
+  "symbols": {
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, skips the automatic restore of the project on create."
+    },
+    "HttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json (random if omitted)."
+    },
+    "HttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json (random if omitted)."
+    },
+
+    "NameSafe": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "safeNamespace",
+      "replaces": "Jex",
+      "fileRename": "Jex",
+      "description": "Project name as a valid C# namespace (e.g. my-api -> my_api). Used for file names and namespaces."
+    },
+    "NameLower": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "kebabCase",
+      "replaces": "TPLNAMELOWER",
+      "description": "Kebab-case project name used for Docker Compose, container and image names."
+    },
+    "TemplatePrefix": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "jex"
+      },
+      "replaces": "TPLPREFIX",
+      "description": "Short-name prefix of the item templates (jex-usecase etc.). Kept out of sourceName rewriting."
+    },
+
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300,
+        "fallback": 5208
+      }
+    },
+    "HttpPortValue": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
+      }
+    },
+    "HttpUrlReplacer": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          { "type": "const", "value": "localhost:" },
+          { "type": "ref", "value": "HttpPortValue" }
+        ]
+      },
+      "replaces": "localhost:5208"
+    },
+    "HttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300,
+        "fallback": 7025
+      }
+    },
+    "HttpsPortValue": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpsPort",
+        "fallbackVariableName": "HttpsPortGenerated"
+      }
+    },
+    "HttpsUrlReplacer": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          { "type": "const", "value": "localhost:" },
+          { "type": "ref", "value": "HttpsPortValue" }
+        ]
+      },
+      "replaces": "localhost:7025"
+    }
+  },
+  "forms": {
+    "kebabCase": {
+      "identifier": "kebabCase"
+    },
+    "safeNamespace": {
+      "identifier": "safe_namespace"
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        "**/[Bb]in/**",
+        "**/[Oo]bj/**",
+        "**/.vs/**",
+        "**/.idea/**",
+        "**/*.user",
+        "**/*.lock.json",
+        "**/.git/**",
+        "**/logs/**",
+        "**/*.db",
+        "**/*.db-*",
+        "**/TestResults/**",
+        "**/artifacts/**",
+        ".template.config/**"
+      ]
+    }
+  ],
+  "SpecialCustomOperations": {
+    "**/*.slnx": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "<!--#if" ],
+            "else": [ "<!--#else" ],
+            "elseif": [ "<!--#elseif" ],
+            "endif": [ "<!--#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "<!--#if" ],
+            "else": [ "<!--#else" ],
+            "elseif": [ "<!--#elseif" ],
+            "endif": [ "<!--#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/*.{yml,yaml,http,txt,gitignore,dockerignore}": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/Dockerfile": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/.env.example": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  },
+  "primaryOutputs": [
+    { "path": "src/Jex.Domain/Jex.Domain.csproj" },
+    { "path": "src/Jex.Application/Jex.Application.csproj" },
+    { "path": "src/Jex.Infrastructure/Jex.Infrastructure.csproj" },
+    { "path": "src/Jex.WebAPI/Jex.WebAPI.csproj" },
+    { "path": "tests/Jex.UnitTests/Jex.UnitTests.csproj" },
+    { "path": "tests/Jex.IntegrationTests/Jex.IntegrationTests.csproj" },
+    { "path": "tests/Jex.ArchitectureTests/Jex.ArchitectureTests.csproj" }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet restore'" }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
 }

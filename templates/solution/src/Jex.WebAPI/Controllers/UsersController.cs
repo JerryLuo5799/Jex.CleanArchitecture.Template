@@ -6,8 +6,6 @@ using Jex.Application.Features.Users.Queries.GetUsers;
 using Jex.Domain.Enums;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Jex.WebAPI.Controllers;
 

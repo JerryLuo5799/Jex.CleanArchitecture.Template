@@ -1,0 +1,162 @@
+# Repository task runner (https://taskfile.dev). Every task is a thin wrapper around a plain
+# dotnet/docker command, so everything also works without `task` installed.
+#
+#   winget install Task.Task   |   brew install go-task   |   scoop install task   |   npm i -g @go-task/cli
+#
+# Common flows:
+#   task check            build + format + test the template source (loose, local)
+#   task check:ci         same as CI (warnings as errors)
+#   task init             install the templates from this checkout (dotnet new jex ...)
+#   task new NAME=Acme    generate a project into artifacts/sandbox/Acme
+#   task new:check        build + test the generated project
+#   task template:test-all   run the generation matrix
+
+version: '3'
+
+vars:
+  PKG_ID: Jex.CleanArchitecture.Template
+  SLN: templates/solution/Jex.slnx
+  SLN_DIR: templates/solution
+  ARTIFACTS: artifacts
+  SANDBOX: artifacts/sandbox
+  NAME: '{{.NAME | default "Acme"}}'
+  DB: '{{.DB | default "sqlite"}}'
+  ASPIRE: '{{.ASPIRE | default "false"}}'
+  AI: '{{.AI | default "true"}}'
+  DOCKER: '{{.DOCKER | default "true"}}'
+  VERSION: '{{.VERSION | default "0.0.0-local"}}'
+  OUT: '{{.SANDBOX}}/{{.NAME}}'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  # ── Template source (templates/solution) ──────────────────────────────────
+  build:
+    desc: Build the template solution
+    cmds:
+      - dotnet build {{.SLN}} -c Release
+
+  format:
+    desc: Apply code formatting
+    cmds:
+      - dotnet format {{.SLN}}
+
+  format:check:
+    desc: Verify formatting (no changes)
+    cmds:
+      - dotnet format {{.SLN}} --verify-no-changes
+
+  test:
+    desc: Run all tests
+    dir: '{{.SLN_DIR}}'
+    cmds:
+      - dotnet test --solution Jex.slnx -c Release
+
+  test:unit:
+    dir: '{{.SLN_DIR}}'
+    cmds:
+      - dotnet test --project tests/Jex.UnitTests/Jex.UnitTests.csproj
+
+  test:integration:
+    dir: '{{.SLN_DIR}}'
+    cmds:
+      - dotnet test --project tests/Jex.IntegrationTests/Jex.IntegrationTests.csproj
+
+  test:arch:
+    dir: '{{.SLN_DIR}}'
+    cmds:
+      - dotnet test --project tests/Jex.ArchitectureTests/Jex.ArchitectureTests.csproj
+
+  check:
+    desc: Local gate - format check, build, test
+    cmds:
+      - task: format:check
+      - task: build
+      - task: test
+
+  check:ci:
+    desc: CI gate - same as check but warnings are errors
+    cmds:
+      - task: format:check
+      - dotnet build {{.SLN}} -c Release -p:ContinuousIntegrationBuild=true
+      - task: test
+
+  run:
+    desc: Run the template WebAPI (Development)
+    cmds:
+      - dotnet run --project {{.SLN_DIR}}/src/Jex.WebAPI
+
+  # ── Template packaging / installation ─────────────────────────────────────
+  pack:
+    desc: Pack the template NuGet package into artifacts/
+    cmds:
+      - dotnet pack Jex.CleanArchitecture.Template.csproj -c Release -p:PackageVersion={{.VERSION}} -o {{.ARTIFACTS}}
+
+  init:
+    desc: Install templates from this checkout (dev loop; no pack needed)
+    cmds:
+      - dotnet new install ./templates --force
+      - dotnet new list jex
+
+  init:pkg:
+    desc: Pack, then install the nupkg (release acceptance path)
+    deps: [pack]
+    cmds:
+      - cmd: dotnet new uninstall {{.PKG_ID}}
+        ignore_error: true
+      - dotnet new install {{.ARTIFACTS}}/{{.PKG_ID}}.{{.VERSION}}.nupkg
+      - dotnet new list jex
+
+  uninstall:
+    desc: Remove both the directory and package installs
+    cmds:
+      - cmd: dotnet new uninstall ./templates
+        ignore_error: true
+      - cmd: dotnet new uninstall {{.PKG_ID}}
+        ignore_error: true
+
+  # ── Generated project sandbox ─────────────────────────────────────────────
+  new:
+    desc: 'Generate a project: task new NAME=Acme DB=postgresql ASPIRE=true AI=true DOCKER=true'
+    cmds:
+      - cmd: '{{if eq OS "windows"}}powershell -NoProfile -Command "if (Test-Path ''{{.OUT}}'') { Remove-Item -Recurse -Force ''{{.OUT}}'' }"{{else}}rm -rf "{{.OUT}}"{{end}}'
+      - dotnet new jex -n {{.NAME}} -o "{{.OUT}}" --database {{.DB}} --use-aspire {{.ASPIRE}} --include-ai-docs {{.AI}} --include-docker {{.DOCKER}}
+      - dotnet run --file scripts/assert-structure.cs -- "{{.OUT}}" {{.NAME}} {{.DB}} {{.ASPIRE}} {{.AI}} {{.DOCKER}}
+
+  new:check:
+    desc: Build + test the generated project (strict)
+    dir: '{{.OUT}}'
+    cmds:
+      - dotnet format {{.NAME}}.slnx --verify-no-changes
+      - dotnet build {{.NAME}}.slnx -c Release -p:ContinuousIntegrationBuild=true
+      - dotnet test --solution {{.NAME}}.slnx -c Release --no-build
+
+  scaffold:usecase:
+    desc: 'Scaffold a use case into the sandbox: task scaffold:usecase USECASE=CreateOrder FEATURE=Orders TYPE=command RETURN=long'
+    dir: '{{.OUT}}'
+    cmds:
+      - dotnet new jex-usecase -n {{.USECASE}} --feature {{.FEATURE}} --type {{.TYPE | default "command"}} --return-type {{.RETURN | default "Unit"}} --solution-name {{.NAME}} -o .
+
+  scaffold:endpoint:
+    desc: 'Scaffold an endpoint group into the sandbox: task scaffold:endpoint FEATURE=Orders'
+    dir: '{{.OUT}}'
+    cmds:
+      - dotnet new jex-endpoint -n {{.FEATURE}} --solution-name {{.NAME}} -o .
+
+  scaffold:entity:
+    desc: 'Scaffold an entity into the sandbox: task scaffold:entity ENTITY=Order PLURAL=Orders'
+    dir: '{{.OUT}}'
+    cmds:
+      - dotnet new jex-entity -n {{.ENTITY}} --plural {{.PLURAL}} --solution-name {{.NAME}} -o .
+
+  template:test-all:
+    desc: Generate, assert, build and test every supported template combination
+    cmds:
+      - dotnet run --file scripts/test-template-matrix.cs -- {{.CLI_ARGS}}
+
+  clean:
+    desc: Remove build output and artifacts
+    cmds:
+      - '{{if eq OS "windows"}}powershell -NoProfile -Command "Get-ChildItem -Path templates -Recurse -Directory -Include bin,obj | Remove-Item -Recurse -Force; if (Test-Path artifacts) { Remove-Item -Recurse -Force artifacts }"{{else}}find templates -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} + ; rm -rf artifacts{{end}}'

@@ -2,9 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Jex.IntegrationTests;
 
@@ -18,7 +15,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
     public const string TestJwtIssuer = "Jex";
     public const string TestJwtAudience = "Jex";
 
-    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"jex_test_{Guid.NewGuid():N}.db");
+    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"TPLNAMELOWER_test_{Guid.NewGuid():N}.db");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

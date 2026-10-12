@@ -1,5 +1,3 @@
-using FluentValidation;
-using ValidationException = Jex.Application.Common.Exceptions.ValidationException;
 
 namespace Jex.Application.Common.Behaviours;
 

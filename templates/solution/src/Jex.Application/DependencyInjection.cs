@@ -1,6 +1,4 @@
-using FluentValidation;
 using Jex.Application.Common.Behaviours;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Jex.Application;
 

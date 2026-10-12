@@ -34,6 +34,8 @@ csharp_style_prefer_method_group_conversion = true:suggestion
 csharp_style_prefer_top_level_statements = true:silent
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
+# Third-party namespaces belong in each project's GlobalUsings.cs; source files import only System.* and project namespaces.
+# This keeps import ordering independent of the generated project name.
 dotnet_style_namespace_match_folder = true:warning
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 dotnet_style_qualification_for_field = false:suggestion
@@ -102,6 +104,7 @@ dotnet_diagnostic.CA1812.severity = none     # DI-instantiated internal classes
 dotnet_diagnostic.CA1716.severity = none     # Identifiers matching keywords in other languages
 dotnet_diagnostic.CA1724.severity = none     # Type names conflicting with namespaces
 dotnet_diagnostic.CA1308.severity = none     # ToLowerInvariant is intended for routes/table names
+dotnet_diagnostic.CA1707.severity = none     # Underscores: names like my-api become my_api; member naming is enforced by IDE1006 rules above
 dotnet_diagnostic.CA2254.severity = warning  # Logging message template must be constant
 dotnet_diagnostic.IDE0005.severity = warning # Unnecessary using directives
 dotnet_diagnostic.IDE0290.severity = suggestion

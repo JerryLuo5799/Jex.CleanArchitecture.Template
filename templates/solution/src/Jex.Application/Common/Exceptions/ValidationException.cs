@@ -1,5 +1,3 @@
-using FluentValidation.Results;
-
 namespace Jex.Application.Common.Exceptions;
 
 /// <summary>

@@ -1,7 +1,6 @@
 using Jex.Application.Features.Auth.Commands.Login;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Jex.WebAPI.Controllers;
 
