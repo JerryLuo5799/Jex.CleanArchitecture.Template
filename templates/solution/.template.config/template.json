@@ -25,6 +25,55 @@
     "b2a9f1d4-5c6e-4f7a-8b9c-0d1e2f3a4b5c"
   ],
   "symbols": {
+    "database": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "sqlite",
+      "description": "Database provider used by FreeSql.",
+      "choices": [
+        { "choice": "sqlite", "description": "SQLite (file database, no infrastructure)" },
+        { "choice": "postgresql", "description": "PostgreSQL" },
+        { "choice": "sqlserver", "description": "SQL Server" },
+        { "choice": "mysql", "description": "MySQL / MariaDB" }
+      ]
+    },
+    "UseAspire": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Add a .NET Aspire AppHost project (ServiceDefaults are always included)."
+    },
+    "IncludeAiDocs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include AGENTS.md, CLAUDE.md, Copilot instructions, .claude skills and .mcp.json."
+    },
+    "IncludeDocker": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include Dockerfile, docker-compose.yml and database init scripts."
+    },
+    "UseSqlite": { "type": "computed", "value": "(database == \"sqlite\")" },
+    "UsePostgreSQL": { "type": "computed", "value": "(database == \"postgresql\")" },
+    "UseSqlServer": { "type": "computed", "value": "(database == \"sqlserver\")" },
+    "UseMySql": { "type": "computed", "value": "(database == \"mysql\")" },
+    "DatabaseProfile": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "DB_PROFILE",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": "postgresql" },
+          { "condition": "(UseSqlServer)", "value": "sqlserver" },
+          { "condition": "(UseMySql)", "value": "mysql" },
+          { "condition": "(true)", "value": "none" }
+        ]
+      }
+    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
@@ -150,6 +199,33 @@
         "**/TestResults/**",
         "**/artifacts/**",
         ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(!UseAspire)",
+          "exclude": [ "src/Jex.AppHost/**" ]
+        },
+        {
+          "condition": "(!IncludeAiDocs)",
+          "exclude": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".claude/**",
+            ".mcp.json",
+            ".github/copilot-instructions.md",
+            ".github/instructions/**"
+          ]
+        },
+        {
+          "condition": "(!IncludeDocker)",
+          "exclude": [
+            "docker-compose.yml",
+            ".dockerignore",
+            ".env.example",
+            "docker/**",
+            "src/Jex.WebAPI/Dockerfile"
+          ]
+        }
       ]
     }
   ],

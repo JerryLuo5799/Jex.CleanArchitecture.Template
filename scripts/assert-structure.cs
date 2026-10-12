@@ -116,9 +116,16 @@ foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirecto
         break;
     }
 
-    foreach (Match m in Regex.Matches(content, @"\bjex\b|\bjex[-_.][a-z]+", RegexOptions.None))
+    foreach (Match m in Regex.Matches(content, @"\bjex(?:[-_.][a-z*]+)?"))
     {
-        if (allowedLowerTokens.Contains(m.Value))
+        // Item template names (jex-usecase etc.), the "jex-*" permission glob and the Taskfile
+        // prefix variable ("TPL: jex") legitimately keep the lowercase template prefix.
+        var lineEnd = content.IndexOf('\n', m.Index);
+        var line = content[(content.LastIndexOf('\n', m.Index) + 1)..(lineEnd < 0 ? content.Length : lineEnd)];
+        var allowed = allowedLowerTokens.Contains(m.Value)
+            || m.Value == "jex-*"
+            || (m.Value == "jex" && line.Contains("TPL: jex", StringComparison.Ordinal));
+        if (allowed)
         {
             continue;
         }

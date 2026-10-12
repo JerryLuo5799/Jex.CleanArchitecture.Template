@@ -1,0 +1,6 @@
+{
+  "dotnet.defaultSolution": "Jex.slnx",
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "omnisharp.enableEditorConfigSupport": true
+}
