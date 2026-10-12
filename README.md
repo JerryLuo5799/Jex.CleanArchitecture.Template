@@ -2,8 +2,6 @@
 
 一个面向 **AI 辅助开发** 的 .NET 10 Web API 项目模板：一条命令在本地生成项目，生成的项目自带清晰的分层架构、统一的开发规范、脚手架命令和一份 `AGENTS.md`，Claude Code、GitHub Copilot、Cursor 打开就能按规范写代码。
 
-参考了 [jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture)（管道行为、端点组、item template）与 [netcorepal/netcorepal-cloud-template](https://github.com/netcorepal/netcorepal-cloud-template)（AI 指令、错误码、分页、compose profiles）。
-
 ## 快速开始
 
 ```bash
