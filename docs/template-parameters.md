@@ -1,12 +1,14 @@
-# 模板参数（`dotnet new jex`）
+# 模板参数（`jex new` / `dotnet new jex`）
+
+`jex new <Name> ...` 把参数原样传给 `dotnet new jex -n <Name> ...`，另外支持 `--template-version <版本>`（使用并在需要时安装该版本的模板包）与 `--no-install`（不安装、不切换模板包）。
 
 | 参数 | 短名 | 类型 / 默认 | 影响 |
 |---|---|---|---|
 | `-n, --name` | | 文本 / 当前目录名 | 项目与命名空间名。`Acme.Shop` → `Acme.Shop.*`；含 `-` 的名字转为合法命名空间（`my-api` → `my_api`），目录与命名空间保持一致；数据库名、compose 项目名使用 kebab-case（`acme-shop`）。 |
 | `--database` | `-db` | `sqlite` | 见下表 |
-| `--use-aspire` | `-aspire` | `false` | 生成 `src/*.AppHost`，加入解决方案；`Taskfile.yml` 增加 `run:aspire`。`*.ServiceDefaults` 始终生成。 |
+| `--use-aspire` | `-aspire` | `false` | 生成 `src/*.AppHost`，加入解决方案；可用 `jex run --aspire` 运行。`*.ServiceDefaults` 始终生成。 |
 | `--include-ai-docs` | `-ai` | `true` | 为 `false` 时不生成 `AGENTS.md`、`CLAUDE.md`、`.claude/`、`.mcp.json`、`.github/copilot-instructions.md`、`.github/instructions/`。 |
-| `--include-docker` | `-docker` | `true` | 为 `false` 时不生成 `Dockerfile`、`.dockerignore`、`docker-compose.yml`、`.env.example`、`docker/`；`Taskfile.yml` 不含 `infra:*`。 |
+| `--include-docker` | `-docker` | `true` | 为 `false` 时不生成 `Dockerfile`、`.dockerignore`、`docker-compose.yml`、`.env.example`、`docker/`；`jex infra` 会提示没有 compose 文件。 |
 | `--http-port` | `-hp` | 随机 5000–5300 | launchSettings 与 `.http` 中的 HTTP 端口 |
 | `--https-port` | `-hsp` | 随机 7000–7300 | launchSettings 中的 HTTPS 端口 |
 | `--skip-restore` | `-sr` | `false` | 生成后不执行 `dotnet restore` |

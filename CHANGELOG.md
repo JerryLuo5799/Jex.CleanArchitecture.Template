@@ -4,6 +4,24 @@
 
 ## [Unreleased]
 
+**破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`。
+
+### 新增
+
+- `Jex.Cli` 全局工具（命令 `jex`），与模板包同版本发布：`jex new`（自动安装/切换同版本模板包）、`jex check [--ci]`、`jex build` / `test` / `format` / `run` / `watch`、`jex scaffold entity|usecase|endpoint|feature`、`jex db script|migrate|reset`、`jex infra up|down`、`jex init`；仓库开发命令 `jex dev install|uninstall|pack|new|matrix|install-cli|check|clean`。
+- 生成项目根目录的 `jex.json`：jex 的项目标记，记录生成时的模板版本（打包时写入包版本）；脚手架据此拒绝跨主版本的模板。
+
+### 变更
+
+- 生成项目的 `AGENTS.md`、README、`CLAUDE.md`、skills、Copilot 指令、`.claude/settings.json` 权限、`.vscode/tasks.json`、item template 提示改用 `jex` 命令。
+- 矩阵测试用被测的 jex 脚手架并运行 `jex check --ci`；CI 从本次构建的 nupkg 安装 jex，并校验 `jex --version`。
+- 打包项目的版本属性改为 `Version`，`dotnet pack Jex.CleanArchitecture.slnx -p:Version=x` 同时产出两个包。
+
+### 移除
+
+- 仓库与生成项目的 `Taskfile.yml`；生成项目的 `DocumentationTests`（文档中的 jex 命令改由 `Jex.Cli.Tests` 用真实解析器校验）。
+- README 中的上游参考说明。
+
 ## [2.0.0]
 
 全面重写。升级前请卸载旧版：`dotnet new uninstall Jex.CleanArchitecture.Template`。

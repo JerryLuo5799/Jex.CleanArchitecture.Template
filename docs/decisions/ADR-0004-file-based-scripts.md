@@ -14,3 +14,5 @@
 ## 后果
 
 脚本里的进程调用用 `ProcessStartInfo.ArgumentList`，路径含空格时无需手工转义；矩阵用例的输出目录故意包含空格。
+
+两个脚本由 `jex dev new` / `jex dev matrix` 包装调用（[ADR-0005](ADR-0005-jex-cli.md)），保留为独立脚本而不移植进 CLI。
