@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Jex.Infrastructure.Persistence.Configurations;
 
 namespace Jex.Infrastructure.Persistence.Migrations;
 
@@ -30,7 +31,7 @@ public sealed partial class MigrationScriptGenerator(
             migrator.ApplyDirectoryTo(outputDirectory, baselineConnection);
 
             var baseline = FreeSqlFactory.Create(database.DataType, baselineConnection, autoSyncStructure: false);
-            var ddl = baseline.CodeFirst.GetComparisonDDLStatements([.. EntityRegistry.Types]);
+            var ddl = baseline.CodeFirst.GetComparisonDDLStatements([.. EntityConfigurations.EntityTypes]);
             baseline.Dispose();
 
             if (string.IsNullOrWhiteSpace(ddl))

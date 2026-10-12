@@ -17,6 +17,14 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"TPLNAMELOWER_test_{Guid.NewGuid():N}.db");
     private readonly Dictionary<string, string?> _settings = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<Action<IServiceCollection>> _configureServices = [];
+
+    /// <summary>Registers extra services (e.g. test-only MediatR handlers). Call before creating a client.</summary>
+    public CustomWebApplicationFactory WithServices(Action<IServiceCollection> configure)
+    {
+        _configureServices.Add(configure);
+        return this;
+    }
 
     /// <summary>Overrides configuration values for this factory instance (e.g. tighter rate limits). Call before creating a client.</summary>
     public CustomWebApplicationFactory WithSettings(params (string Key, string? Value)[] settings)
@@ -49,6 +57,14 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         {
             builder.UseSetting(key, value);
         }
+
+        builder.ConfigureTestServices(services =>
+        {
+            foreach (var configure in _configureServices)
+            {
+                configure(services);
+            }
+        });
     }
 
     /// <summary>Creates a client whose requests carry a test JWT (optionally with roles).</summary>

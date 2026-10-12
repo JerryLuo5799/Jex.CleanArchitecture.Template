@@ -105,6 +105,7 @@ dotnet_diagnostic.CA1812.severity = none     # DI-instantiated internal classes
 dotnet_diagnostic.CA1716.severity = none     # Identifiers matching keywords in other languages
 dotnet_diagnostic.CA1724.severity = none     # Type names conflicting with namespaces
 dotnet_diagnostic.CA1308.severity = none     # ToLowerInvariant is intended for routes/table names
+dotnet_diagnostic.CA1711.severity = none     # Suffixes such as EventHandler and Queue are domain vocabulary here
 dotnet_diagnostic.CA1707.severity = none     # Underscores: names like my-api become my_api; member naming is enforced by IDE1006 rules above
 dotnet_diagnostic.CA2254.severity = warning  # Logging message template must be constant
 dotnet_diagnostic.IDE0005.severity = warning # Unnecessary using directives

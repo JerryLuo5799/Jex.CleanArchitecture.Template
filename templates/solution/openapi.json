@@ -35,6 +35,349 @@
         }
       }
     },
+    "/api/todoitems": {
+      "get": {
+        "tags": [
+          "TodoItems"
+        ],
+        "operationId": "TodoItems_GetTodoItemsWithPagination",
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfIReadOnlyListOfTodoItemBriefDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TodoItems"
+        ],
+        "operationId": "TodoItems_CreateTodoItem",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTodoItemCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCreatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/todoitems/{id}": {
+      "put": {
+        "tags": [
+          "TodoItems"
+        ],
+        "operationId": "TodoItems_UpdateTodoItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTodoItemRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TodoItems"
+        ],
+        "operationId": "TodoItems_DeleteTodoItem",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/todoitems/{id}/detail": {
+      "put": {
+        "tags": [
+          "TodoItems"
+        ],
+        "operationId": "TodoItems_UpdateTodoItemDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTodoItemDetailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/todolists": {
+      "get": {
+        "tags": [
+          "TodoLists"
+        ],
+        "operationId": "TodoLists_GetTodoLists",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfTodosVm"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TodoLists"
+        ],
+        "operationId": "TodoLists_CreateTodoList",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTodoListCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfCreatedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/todolists/{id}": {
+      "put": {
+        "tags": [
+          "TodoLists"
+        ],
+        "operationId": "TodoLists_UpdateTodoList",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTodoListRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TodoLists"
+        ],
+        "operationId": "TodoLists_DeleteTodoList",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/todolists/purge": {
+      "post": {
+        "tags": [
+          "TodoLists"
+        ],
+        "operationId": "TodoLists_PurgeTodoLists",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOfPurgedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users": {
       "get": {
         "tags": [
@@ -273,6 +616,62 @@
         },
         "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
+      "ApiResponseOfIReadOnlyListOfTodoItemBriefDto": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TodoItemBriefDto"
+            },
+            "description": "Payload. Null on failure."
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
       "ApiResponseOfIReadOnlyListOfUserDto": {
         "type": "object",
         "properties": {
@@ -435,6 +834,120 @@
         },
         "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
+      "ApiResponseOfPurgedResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Payload. Null on failure.",
+                "$ref": "#/components/schemas/PurgedResponse"
+              }
+            ]
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
+      "ApiResponseOfTodosVm": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Correlation id (W3C trace id). Also returned in the `X-Request-Id` header."
+          },
+          "code": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Business status code. 0 = success.",
+            "format": "int32"
+          },
+          "msg": {
+            "type": "string",
+            "description": "Human-readable message. Empty on success."
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "description": "Payload. Null on failure.",
+                "$ref": "#/components/schemas/TodosVm"
+              }
+            ]
+          },
+          "totalCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "Total record count for paged list endpoints.",
+            "format": "int64"
+          },
+          "errors": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Validation errors grouped by member name. Only present for code 4000."
+          }
+        },
+        "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
+      },
       "ApiResponseOfUserDto": {
         "type": "object",
         "properties": {
@@ -509,6 +1022,44 @@
         },
         "description": "Payload returned by create endpoints."
       },
+      "CreateTodoItemCommand": {
+        "required": [
+          "listId",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "listId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateTodoListCommand": {
+        "required": [
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "colour": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Creates a todo list and returns its Id."
+      },
       "CreateUserCommand": {
         "required": [
           "firstName",
@@ -560,6 +1111,242 @@
           }
         },
         "description": "Payload of a successful login."
+      },
+      "LookupDto": {
+        "required": [
+          "id",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "PriorityLevel": {
+        "type": "integer"
+      },
+      "PurgedResponse": {
+        "required": [
+          "count"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "TodoItemBriefDto": {
+        "required": [
+          "id",
+          "listId",
+          "title",
+          "done"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "listId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TodoItemDto": {
+        "required": [
+          "id",
+          "listId",
+          "title",
+          "note",
+          "priority",
+          "reminder",
+          "done"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "listId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "priority": {
+            "$ref": "#/components/schemas/PriorityLevel"
+          },
+          "reminder": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TodoListDto": {
+        "required": [
+          "id",
+          "title",
+          "colour",
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "colour": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodoItemDto"
+            }
+          }
+        }
+      },
+      "TodosVm": {
+        "required": [
+          "priorityLevels",
+          "lists"
+        ],
+        "type": "object",
+        "properties": {
+          "priorityLevels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LookupDto"
+            }
+          },
+          "lists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodoListDto"
+            }
+          }
+        }
+      },
+      "UpdateTodoItemDetailRequest": {
+        "required": [
+          "listId",
+          "priority",
+          "note"
+        ],
+        "type": "object",
+        "properties": {
+          "listId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/PriorityLevel"
+          },
+          "note": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UpdateTodoItemRequest": {
+        "required": [
+          "title",
+          "done"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateTodoListRequest": {
+        "required": [
+          "title",
+          "colour"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "colour": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
       },
       "UpdateUserRequest": {
         "required": [
@@ -661,6 +1448,12 @@
   "tags": [
     {
       "name": "Auth"
+    },
+    {
+      "name": "TodoItems"
+    },
+    {
+      "name": "TodoLists"
     },
     {
       "name": "Users"

@@ -1,6 +1,7 @@
 using Jex.Domain.Constants;
 using Jex.Domain.Entities;
 using Jex.Domain.Enums;
+using Jex.Infrastructure.Persistence.Configurations;
 using Jex.Infrastructure.Persistence.Migrations;
 
 namespace Jex.Infrastructure.Persistence;
@@ -28,7 +29,7 @@ public sealed class ApplicationDbInitialiser(
         if (database.Value.AutoSyncStructure)
         {
             logger.LogInformation("Synchronising schema from the entity model (Database:AutoSyncStructure=true; development only).");
-            freeSql.CodeFirst.SyncStructure([.. EntityRegistry.Types]);
+            freeSql.CodeFirst.SyncStructure([.. EntityConfigurations.EntityTypes]);
         }
         else if (migration.Value.RunOnStartup)
         {

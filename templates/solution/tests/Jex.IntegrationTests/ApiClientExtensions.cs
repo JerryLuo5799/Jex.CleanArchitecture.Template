@@ -37,6 +37,14 @@ public static class ApiClientExtensions
         }
     }
 
+    public static async Task<long> CreateTodoListAsync(this HttpClient client, string title)
+    {
+        var response = await client.PostAsync("/api/todolists", JsonBody(new { Title = title }));
+        var envelope = await response.ReadEnvelopeAsync();
+        envelope.Code().ShouldBe(0, $"create todo list failed: {envelope}");
+        return envelope.Data().GetProperty("id").GetInt64();
+    }
+
     public static async Task<long> CreateUserAsync(this HttpClient client, string email, string password = "Secure123!")
     {
         var response = await client.PostAsync("/api/users", JsonBody(new

@@ -5,7 +5,6 @@ using Jex.Infrastructure.HealthChecks;
 using Jex.Infrastructure.Identity;
 using Jex.Infrastructure.Persistence;
 using Jex.Infrastructure.Persistence.Migrations;
-using Jex.Infrastructure.Persistence.Repositories;
 using IUnitOfWork = Jex.Application.Common.Interfaces.IUnitOfWork;
 
 namespace Jex.Infrastructure;
@@ -47,7 +46,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, FreeSqlUnitOfWork>();
         services.AddScoped<AuditStamper>();
 
-        services.AddScoped<IUserRepository, UserRepository>();
+        // Repositories are registered by convention: every class ending in "Repository" is registered against
+        // the Application interfaces it implements (e.g. TodoListRepository -> ITodoListRepository).
+        RegisterRepositoriesByConvention(services);
 
         services.AddIdentityCore<User>(options =>
             {
@@ -93,6 +94,23 @@ public static class DependencyInjection
     {
         using var scope = services.CreateScope();
         await scope.ServiceProvider.GetRequiredService<ApplicationDbInitialiser>().InitialiseAsync(cancellationToken);
+    }
+
+    private static void RegisterRepositoriesByConvention(IServiceCollection services)
+    {
+        var applicationNamespace = typeof(IUserRepository).Namespace!;
+
+        var implementations = typeof(DependencyInjection).Assembly
+            .GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && t.Name.EndsWith("Repository", StringComparison.Ordinal));
+
+        foreach (var implementation in implementations)
+        {
+            foreach (var contract in implementation.GetInterfaces().Where(i => !i.IsGenericType && i.Namespace == applicationNamespace))
+            {
+                services.AddScoped(contract, implementation);
+            }
+        }
     }
 
     private static string ConnectionString(IConfiguration configuration)

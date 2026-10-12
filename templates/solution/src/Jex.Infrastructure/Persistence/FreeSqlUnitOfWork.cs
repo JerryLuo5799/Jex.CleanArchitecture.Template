@@ -34,9 +34,10 @@ public sealed class FreeSqlUnitOfWork(UnitOfWorkManager manager) : IUnitOfWork
 
         public void Dispose()
         {
-            if (!_completed)
+            // Only the owner rolls back. A joined (nested) scope must not touch the transaction: an
+            // exception inside it propagates to the owner, which then rolls back on its own Dispose.
+            if (IsOwner && !_completed)
             {
-                // Dispose without Commit: FreeSql rolls back the (owner's) transaction.
                 unitOfWork.Rollback();
             }
 
