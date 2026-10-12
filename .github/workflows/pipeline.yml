@@ -28,3 +28,4 @@ jobs:
     uses: ./.github/workflows/template-tests.yml
     with:
       artifact-name: ${{ needs.ci.outputs.artifact-name }}
+      version: ${{ needs.ci.outputs.version }}

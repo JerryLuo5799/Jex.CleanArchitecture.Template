@@ -14,7 +14,7 @@ public sealed class MigrationTests(CustomWebApplicationFactory factory) : IClass
     public void GenerateThenMigrate_EmptyDatabase_CreatesSchemaOnce()
     {
         // This end-to-end check uses throw-away SQLite files; other providers need a scratch server
-        // (Migration:BaselineConnection) and are exercised by `task db:script` against real infrastructure.
+        // (Migration:BaselineConnection) and are exercised by `jex db script` against real infrastructure.
         Assert.SkipUnless(DbUpMigrator.Supports(FreeSql.DataType.Sqlite), "Project provider is not SQLite.");
 
         using var scope = factory.Services.CreateScope();

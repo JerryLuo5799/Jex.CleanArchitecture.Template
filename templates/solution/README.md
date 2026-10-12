@@ -5,15 +5,15 @@
 ## 快速开始
 
 ```bash
-# 可选：安装 go-task 以使用 task 命令（winget install Task.Task / brew install go-task）
-task check          # 格式化 + 构建 + 测试（验收命令）
-task run            # 启动 API：http://localhost:5208 ，Scalar UI：/scalar
+dotnet tool install -g TPLTOOL   # 一次性安装 jex 命令行工具
+jex check                       # 格式化 + 构建 + 测试（验收命令）
+jex run                         # 启动 API：http://localhost:5208 ，Scalar UI：/scalar
 ```
 
 开发环境首次启动会自动建表，并种子化管理员 `admin@example.com / Admin123!`（见 `src/Jex.WebAPI/appsettings.Development.json`）。
 用 `src/Jex.WebAPI/Jex.WebAPI.http` 可以直接登录并调用示例接口。
 
-没有 go-task 时，所有命令都有等价的 `dotnet` 命令（AGENTS.md §10）。
+`jex` 在解决方案任意子目录都能运行，它通过根目录的 `jex.json` 识别本项目（文件里记录了生成时的模板版本，请提交它）。不安装 jex 时，所有命令都有等价的 `dotnet` 命令（AGENTS.md §10）。
 
 ## 结构
 
@@ -29,9 +29,10 @@ src/
   Jex.ServiceDefaults/  OpenTelemetry、服务发现、弹性策略
 tests/
   Jex.UnitTests/  Jex.IntegrationTests/  Jex.ArchitectureTests/
-db/migrations/          版本化 SQL 迁移（task db:script 生成，task db:migrate 执行）
+db/migrations/          版本化 SQL 迁移（jex db script 生成，jex db migrate 执行）
 docs/decisions/         架构决策记录（ADR）
 openapi.json            构建时生成的 API 契约
+jex.json                jex 项目标记与生成时的模板版本
 ```
 
 示例功能切片：`TodoLists` / `TodoItems`（实体 → 仓储 → 用例 → 端点 → 测试），新功能照着它写。
@@ -40,16 +41,16 @@ openapi.json            构建时生成的 API 契约
 
 | 目的 | 命令 |
 |---|---|
-| 验收 | `task check` |
-| 新功能脚手架 | `task scaffold:feature ENTITY=Order PLURAL=Orders` |
-| 生成迁移脚本 | `task db:script NAME=add-orders` |
-| 执行迁移 | `task db:migrate` |
+| 验收 | `jex check` |
+| 新功能脚手架 | `jex scaffold feature Order Orders` |
+| 生成迁移脚本 | `jex db script add-orders` |
+| 执行迁移 | `jex db migrate` |
 <!--#if (IncludeDocker) -->
-| 本地数据库容器 | `task infra:up` / `task infra:down` |
+| 本地数据库容器 | `jex infra up` / `jex infra down` |
 | 构建镜像 | `docker build -f src/Jex.WebAPI/Dockerfile -t TPLNAMELOWER .` |
 <!--#endif -->
 <!--#if (UseAspire) -->
-| Aspire 编排运行 | `task run:aspire` |
+| Aspire 编排运行 | `jex run --aspire` |
 <!--#endif -->
 
 ## 配置
@@ -60,4 +61,4 @@ openapi.json            构建时生成的 API 契约
 
 ## 删除示例功能
 
-删除 `src/*/**/Todo*`、`src/Jex.WebAPI/Endpoints/Todo*.cs`、`tests/**/Todo*`、`src/Jex.Infrastructure/Persistence/Configurations/TodoConfigurations.cs`，然后运行 `task check`。
+删除 `src/*/**/Todo*`、`src/Jex.WebAPI/Endpoints/Todo*.cs`、`tests/**/Todo*`、`src/Jex.Infrastructure/Persistence/Configurations/TodoConfigurations.cs`，然后运行 `jex check`。

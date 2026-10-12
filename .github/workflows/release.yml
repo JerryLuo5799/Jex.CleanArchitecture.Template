@@ -1,6 +1,8 @@
-# Tag v1.2.3 -> strict check + pack 1.2.3 -> full template matrix -> publish that exact nupkg.
+# Tag v1.2.3 -> strict check + pack 1.2.3 (template + Jex.Cli) -> full template matrix -> publish those exact nupkgs.
 # NuGet uses Trusted Publishing (OIDC): configure a trusted publishing policy for this repository and
-# workflow on nuget.org and set the NUGET_USER repository variable to the nuget.org account name.
+# workflow on nuget.org and set the NUGET_USER repository variable to the nuget.org account name. The policy
+# must cover both package ids, Jex.CleanArchitecture.Template and Jex.Cli (check this before the first release
+# that creates Jex.Cli).
 name: release
 
 on:
@@ -38,6 +40,7 @@ jobs:
     uses: ./.github/workflows/template-tests.yml
     with:
       artifact-name: ${{ needs.ci.outputs.artifact-name }}
+      version: ${{ needs.ci.outputs.version }}
 
   publish:
     needs: [ version, ci, template-tests ]

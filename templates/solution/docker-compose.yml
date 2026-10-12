@@ -1,5 +1,5 @@
 # Local infrastructure and an optional containerised API.
-#   task infra:up              -> database only (profile DB_PROFILE)
+#   jex infra up               -> database only (profile DB_PROFILE)
 #   docker compose --profile api --profile DB_PROFILE up --build   -> database + API
 # Copy .env.example to .env first.
 name: TPLNAMELOWER
@@ -15,7 +15,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       # Not "${JWT_SECRET:?...}": compose interpolates every service, so a required variable here would break
-      # `task infra:up`. A missing or short secret still stops the API at startup (JwtOptions validation).
+      # `jex infra up`. A missing or short secret still stops the API at startup (JwtOptions validation).
       Jwt__Secret: ${JWT_SECRET:-}
       Migration__RunOnStartup: ${MIGRATION_RUN_ON_STARTUP:-false}
       Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN:-*}
