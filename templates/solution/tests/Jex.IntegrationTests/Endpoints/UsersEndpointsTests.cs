@@ -1,5 +1,6 @@
 using System.Net;
 using Jex.Application.Common;
+using Jex.Domain.Constants;
 using Jex.Domain.Enums;
 using static Jex.IntegrationTests.ApiClientExtensions;
 
@@ -134,11 +135,23 @@ public sealed class UsersEndpointsTests : IClassFixture<CustomWebApplicationFact
     }
 
     [Fact]
+    public async Task Delete_AsNonAdministrator_Returns4030()
+    {
+        var id = await _client.CreateUserAsync("frank@example.com");
+
+        var response = await _client.DeleteAsync($"/api/users/{id}");
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await response.ReadEnvelopeAsync()).Code().ShouldBe(ErrorCodes.Forbidden);
+    }
+
+    [Fact]
     public async Task Delete_ExistingUser_ThenGetReturnsNotFound()
     {
         var id = await _client.CreateUserAsync("eve@example.com");
+        var admin = _factory.CreateAuthenticatedClient(Roles.Administrator);
 
-        var deleteResponse = await _client.DeleteAsync($"/api/users/{id}");
+        var deleteResponse = await admin.DeleteAsync($"/api/users/{id}");
         (await deleteResponse.ReadEnvelopeAsync()).Code().ShouldBe(ErrorCodes.Success);
 
         var getResponse = await _client.GetAsync($"/api/users/{id}");
@@ -148,7 +161,7 @@ public sealed class UsersEndpointsTests : IClassFixture<CustomWebApplicationFact
     [Fact]
     public async Task Delete_NonExistentUser_ReturnsNotFoundCode()
     {
-        var response = await _client.DeleteAsync("/api/users/999999");
+        var response = await _factory.CreateAuthenticatedClient(Roles.Administrator).DeleteAsync("/api/users/999999");
 
         (await response.ReadEnvelopeAsync()).Code().ShouldBe(ErrorCodes.NotFound);
     }

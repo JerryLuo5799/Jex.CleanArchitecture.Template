@@ -1,4 +1,3 @@
-using Jex.Application.Common.Exceptions;
 using Jex.Application.Common.Interfaces;
 using Jex.Application.Features.Users.Commands.CreateUser;
 

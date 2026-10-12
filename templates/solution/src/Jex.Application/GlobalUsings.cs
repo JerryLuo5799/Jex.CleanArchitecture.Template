@@ -4,6 +4,7 @@ global using FluentValidation;
 global using FluentValidation.Results;
 global using MediatR;
 global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
 
 // The application ValidationException (code 4000) wins over FluentValidation.ValidationException.
 global using ValidationException = Jex.Application.Common.Exceptions.ValidationException;

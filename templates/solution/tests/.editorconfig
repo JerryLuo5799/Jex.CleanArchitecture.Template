@@ -16,3 +16,4 @@ dotnet_diagnostic.CA1001.severity = none   # Types owning disposables (xunit man
 dotnet_diagnostic.CA1063.severity = none   # Implement IDisposable correctly
 dotnet_diagnostic.CA1816.severity = none   # GC.SuppressFinalize
 dotnet_diagnostic.xUnit1051.severity = none # TestContext cancellation token: not needed for short HTTP calls
+dotnet_diagnostic.CA1873.severity = none   # Logging argument evaluation (mock verifications)

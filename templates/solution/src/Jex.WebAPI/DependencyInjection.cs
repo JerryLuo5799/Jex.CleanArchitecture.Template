@@ -2,9 +2,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Jex.Application.Common;
+using Jex.Application.Common.Interfaces;
+using Jex.Domain.Constants;
 using Jex.Infrastructure.Identity;
 using Jex.WebAPI.Infrastructure;
 using Jex.WebAPI.Options;
+using Jex.WebAPI.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -55,8 +58,10 @@ public static class DependencyInjection
                 };
             });
 
-        services.AddAuthorization();
+        services.AddAuthorizationBuilder()
+            .AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.Administrator));
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, EnvelopeAuthorizationResultHandler>();
+        services.AddScoped<ICurrentUser, CurrentUser>();
     }
 
     private static void AddErrorHandling(IServiceCollection services)
