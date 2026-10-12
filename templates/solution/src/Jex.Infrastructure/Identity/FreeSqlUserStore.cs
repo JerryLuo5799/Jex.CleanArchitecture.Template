@@ -1,12 +1,13 @@
 using Jex.Domain.Entities;
+using Jex.Infrastructure.Persistence;
 
 namespace Jex.Infrastructure.Identity;
 
 /// <summary>
-/// FreeSQL-backed implementation of <see cref="IUserStore{TUser}"/> and related user store interfaces.
-/// Provides ASP.NET Core Identity with a persistence layer backed by FreeSQL instead of EF Core.
+/// FreeSql-backed Identity user store. All writes go through unit-of-work bound repositories so they
+/// join the command's transaction; updates are guarded by <see cref="IdentityUser{TKey}.ConcurrencyStamp"/>.
 /// </summary>
-public sealed class FreeSqlUserStore(IFreeSql freeSql)
+public sealed class FreeSqlUserStore
     : IUserStore<User>,
       IUserPasswordStore<User>,
       IUserEmailStore<User>,
@@ -15,53 +16,80 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
       IUserLockoutStore<User>,
       IUserTwoFactorStore<User>
 {
+    private readonly DefaultRepository<User, long> _users;
+    private readonly DefaultRepository<ApplicationRole, long> _roles;
+    private readonly DefaultRepository<UserRole, long> _userRoles;
+    private readonly AuditStamper _audit;
+    private readonly IdentityErrorDescriber _errors;
+
+    public FreeSqlUserStore(IFreeSql freeSql, UnitOfWorkManager unitOfWorkManager, AuditStamper audit, IdentityErrorDescriber errors)
+    {
+        _users = new DefaultRepository<User, long>(freeSql, unitOfWorkManager);
+        _roles = new DefaultRepository<ApplicationRole, long>(freeSql, unitOfWorkManager);
+        _userRoles = new DefaultRepository<UserRole, long>(freeSql, unitOfWorkManager);
+        _audit = audit;
+        _errors = errors;
+    }
+
     // ── IUserStore ───────────────────────────────────────────────────────────
 
     public async Task<IdentityResult> CreateAsync(User user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        // ExecuteIdentityAsync returns the auto-generated ROWID from the database.
-        // We assign it to user.Id so the caller (e.g. UserManager) can retrieve the new Id.
-        var id = await freeSql.Insert(user).ExecuteIdentityAsync(cancellationToken);
-        user.Id = id;
+        _audit.OnInsert(user);
+        await _users.InsertAsync(user, cancellationToken);
         return IdentityResult.Success;
     }
 
     public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        user.UpdatedAt = DateTime.UtcNow;
-        await freeSql.Update<User>().SetSource(user).ExecuteAffrowsAsync(cancellationToken);
+
+        // Optimistic concurrency: the row must still carry the stamp we loaded; then rotate it.
+        var expectedStamp = user.ConcurrencyStamp;
+        user.ConcurrencyStamp = Guid.NewGuid().ToString();
+        _audit.OnUpdate(user);
+
+        var affected = await _users.UpdateDiy
+            .SetSource(user)
+            .Where(u => u.ConcurrencyStamp == expectedStamp)
+            .ExecuteAffrowsAsync(cancellationToken);
+
+        if (affected == 0)
+        {
+            user.ConcurrencyStamp = expectedStamp;
+            return IdentityResult.Failed(_errors.ConcurrencyFailure());
+        }
+
         return IdentityResult.Success;
     }
 
     public async Task<IdentityResult> DeleteAsync(User user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await freeSql.Delete<User>().Where(u => u.Id == user.Id).ExecuteAffrowsAsync(cancellationToken);
+        await _userRoles.DeleteAsync(ur => ur.UserId == user.Id, cancellationToken);
+        await _users.DeleteAsync(u => u.Id == user.Id, cancellationToken);
         return IdentityResult.Success;
     }
 
     public async Task<User?> FindByIdAsync(string userId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!long.TryParse(userId, out var id)) return null;
-        return await freeSql.Select<User>().Where(u => u.Id == id).FirstAsync(cancellationToken);
+        return long.TryParse(userId, System.Globalization.CultureInfo.InvariantCulture, out var id)
+            ? await _users.Select.Where(u => u.Id == id).FirstAsync(cancellationToken)
+            : null;
     }
 
     public async Task<User?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return await freeSql.Select<User>()
-            .Where(u => u.NormalizedUserName == normalizedUserName)
-            .FirstAsync(cancellationToken);
+        return await _users.Select.Where(u => u.NormalizedUserName == normalizedUserName).FirstAsync(cancellationToken);
     }
 
     public Task<string> GetUserIdAsync(User user, CancellationToken cancellationToken)
         => Task.FromResult(user.Id.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
-    public Task<string?> GetUserNameAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.UserName);
+    public Task<string?> GetUserNameAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.UserName);
 
     public Task SetUserNameAsync(User user, string? userName, CancellationToken cancellationToken)
     {
@@ -69,8 +97,7 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
         return Task.CompletedTask;
     }
 
-    public Task<string?> GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.NormalizedUserName);
+    public Task<string?> GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.NormalizedUserName);
 
     public Task SetNormalizedUserNameAsync(User user, string? normalizedName, CancellationToken cancellationToken)
     {
@@ -86,11 +113,9 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
         return Task.CompletedTask;
     }
 
-    public Task<string?> GetPasswordHashAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.PasswordHash);
+    public Task<string?> GetPasswordHashAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.PasswordHash);
 
-    public Task<bool> HasPasswordAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.PasswordHash != null);
+    public Task<bool> HasPasswordAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.PasswordHash is not null);
 
     // ── IUserEmailStore ──────────────────────────────────────────────────────
 
@@ -100,11 +125,9 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
         return Task.CompletedTask;
     }
 
-    public Task<string?> GetEmailAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.Email);
+    public Task<string?> GetEmailAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.Email);
 
-    public Task<bool> GetEmailConfirmedAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.EmailConfirmed);
+    public Task<bool> GetEmailConfirmedAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.EmailConfirmed);
 
     public Task SetEmailConfirmedAsync(User user, bool confirmed, CancellationToken cancellationToken)
     {
@@ -115,13 +138,10 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
     public async Task<User?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return await freeSql.Select<User>()
-            .Where(u => u.NormalizedEmail == normalizedEmail)
-            .FirstAsync(cancellationToken);
+        return await _users.Select.Where(u => u.NormalizedEmail == normalizedEmail).FirstAsync(cancellationToken);
     }
 
-    public Task<string?> GetNormalizedEmailAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.NormalizedEmail);
+    public Task<string?> GetNormalizedEmailAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.NormalizedEmail);
 
     public Task SetNormalizedEmailAsync(User user, string? normalizedEmail, CancellationToken cancellationToken)
     {
@@ -137,13 +157,11 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
         return Task.CompletedTask;
     }
 
-    public Task<string?> GetSecurityStampAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.SecurityStamp);
+    public Task<string?> GetSecurityStampAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.SecurityStamp);
 
     // ── IUserLockoutStore ────────────────────────────────────────────────────
 
-    public Task<DateTimeOffset?> GetLockoutEndDateAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.LockoutEnd);
+    public Task<DateTimeOffset?> GetLockoutEndDateAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.LockoutEnd);
 
     public Task SetLockoutEndDateAsync(User user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken)
     {
@@ -163,11 +181,9 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
         return Task.CompletedTask;
     }
 
-    public Task<int> GetAccessFailedCountAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.AccessFailedCount);
+    public Task<int> GetAccessFailedCountAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.AccessFailedCount);
 
-    public Task<bool> GetLockoutEnabledAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.LockoutEnabled);
+    public Task<bool> GetLockoutEnabledAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.LockoutEnabled);
 
     public Task SetLockoutEnabledAsync(User user, bool enabled, CancellationToken cancellationToken)
     {
@@ -183,91 +199,71 @@ public sealed class FreeSqlUserStore(IFreeSql freeSql)
         return Task.CompletedTask;
     }
 
-    public Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken)
-        => Task.FromResult(user.TwoFactorEnabled);
+    public Task<bool> GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken) => Task.FromResult(user.TwoFactorEnabled);
 
     // ── IUserRoleStore ───────────────────────────────────────────────────────
 
     public async Task AddToRoleAsync(User user, string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var normalizedRole = roleName.ToUpperInvariant();
-        var role = await freeSql.Select<ApplicationRole>()
-            .Where(r => r.NormalizedName == normalizedRole)
-            .FirstAsync(cancellationToken)
+        var role = await FindRoleAsync(roleName, cancellationToken)
             ?? throw new InvalidOperationException($"Role '{roleName}' does not exist.");
 
-        var userRole = new UserRole { UserId = user.Id, RoleId = role.Id };
-        await freeSql.Insert(userRole).ExecuteAffrowsAsync(cancellationToken);
+        await _userRoles.InsertAsync(new UserRole { UserId = user.Id, RoleId = role.Id }, cancellationToken);
     }
 
     public async Task RemoveFromRoleAsync(User user, string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var normalizedRole = roleName.ToUpperInvariant();
-        var role = await freeSql.Select<ApplicationRole>()
-            .Where(r => r.NormalizedName == normalizedRole)
-            .FirstAsync(cancellationToken);
+        var role = await FindRoleAsync(roleName, cancellationToken);
+        if (role is null)
+        {
+            return;
+        }
 
-        if (role is null) return;
-
-        await freeSql.Delete<UserRole>()
-            .Where(ur => ur.UserId == user.Id && ur.RoleId == role.Id)
-            .ExecuteAffrowsAsync(cancellationToken);
+        await _userRoles.DeleteAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id, cancellationToken);
     }
 
     public async Task<IList<string>> GetRolesAsync(User user, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var roleIds = await freeSql.Select<UserRole>()
-            .Where(ur => ur.UserId == user.Id)
-            .ToListAsync(ur => ur.RoleId, cancellationToken);
+        var roleIds = await _userRoles.Select.Where(ur => ur.UserId == user.Id).ToListAsync(ur => ur.RoleId, cancellationToken);
+        if (roleIds.Count == 0)
+        {
+            return [];
+        }
 
-        if (roleIds.Count == 0) return [];
-
-        var roles = await freeSql.Select<ApplicationRole>()
-            .Where(r => roleIds.Contains(r.Id))
-            .ToListAsync(cancellationToken);
-
-        return roles.Select(r => r.Name ?? string.Empty).ToList();
+        return await _roles.Select.Where(r => roleIds.Contains(r.Id)).ToListAsync(r => r.Name ?? string.Empty, cancellationToken);
     }
 
     public async Task<bool> IsInRoleAsync(User user, string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var normalizedRole = roleName.ToUpperInvariant();
-        var role = await freeSql.Select<ApplicationRole>()
-            .Where(r => r.NormalizedName == normalizedRole)
-            .FirstAsync(cancellationToken);
-
-        if (role is null) return false;
-
-        return await freeSql.Select<UserRole>()
-            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id, cancellationToken);
+        var role = await FindRoleAsync(roleName, cancellationToken);
+        return role is not null && await _userRoles.Select.AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id, cancellationToken);
     }
 
     public async Task<IList<User>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var normalizedRole = roleName.ToUpperInvariant();
-        var role = await freeSql.Select<ApplicationRole>()
-            .Where(r => r.NormalizedName == normalizedRole)
-            .FirstAsync(cancellationToken);
+        var role = await FindRoleAsync(roleName, cancellationToken);
+        if (role is null)
+        {
+            return [];
+        }
 
-        if (role is null) return [];
-
-        var userIds = await freeSql.Select<UserRole>()
-            .Where(ur => ur.RoleId == role.Id)
-            .ToListAsync(ur => ur.UserId, cancellationToken);
-
-        if (userIds.Count == 0) return [];
-
-        return await freeSql.Select<User>()
-            .Where(u => userIds.Contains(u.Id))
-            .ToListAsync(cancellationToken);
+        var userIds = await _userRoles.Select.Where(ur => ur.RoleId == role.Id).ToListAsync(ur => ur.UserId, cancellationToken);
+        return userIds.Count == 0 ? [] : await _users.Select.Where(u => userIds.Contains(u.Id)).ToListAsync(cancellationToken);
     }
 
-    // ── IDisposable ──────────────────────────────────────────────────────────
+    private async Task<ApplicationRole?> FindRoleAsync(string roleName, CancellationToken cancellationToken)
+    {
+        var normalized = roleName.ToUpperInvariant();
+        return await _roles.Select.Where(r => r.NormalizedName == normalized).FirstAsync(cancellationToken);
+    }
 
-    public void Dispose() { }
+    public void Dispose()
+    {
+        // Repositories are owned by the scoped unit of work; nothing to release here.
+    }
 }

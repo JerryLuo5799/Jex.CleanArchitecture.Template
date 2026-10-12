@@ -1,4 +1,5 @@
 using Jex.Application.Common.Interfaces;
+using Jex.Application.Common.Messaging;
 
 namespace Jex.Application.Features.Users.Commands.CreateUser;
 
@@ -7,7 +8,7 @@ public sealed record CreateUserCommand(
     string FirstName,
     string LastName,
     string Email,
-    string Password) : IRequest<long>;
+    string Password) : ICommand<long>;
 
 /// <summary>
 /// Handles <see cref="CreateUserCommand"/>. Delegates creation (including password hashing)

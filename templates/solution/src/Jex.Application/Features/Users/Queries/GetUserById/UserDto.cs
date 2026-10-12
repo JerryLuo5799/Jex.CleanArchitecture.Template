@@ -14,10 +14,10 @@ public sealed record UserDto(
     string? Email,
     UserStatus Status,
     DateTime CreatedAt,
-    DateTime? UpdatedAt)
+    DateTime? LastModifiedAt)
 {
     public string FullName => $"{FirstName} {LastName}";
 
     public static UserDto From(User user) =>
-        new(user.Id, user.FirstName, user.LastName, user.Email, user.Status, user.CreatedAt, user.UpdatedAt);
+        new(user.Id, user.FirstName, user.LastName, user.Email, user.Status, user.CreatedAt, user.LastModifiedAt);
 }

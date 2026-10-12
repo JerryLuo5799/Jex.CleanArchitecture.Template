@@ -25,10 +25,16 @@ try
     builder.Host.UseNLog();
 
     builder.Services.AddApplication();
-    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration, typeof(Program).Assembly);
     builder.Services.AddWebServices();
 
     var app = builder.Build();
+
+    var (handled, exitCode) = await DatabaseCommands.TryRunAsync(app, args);
+    if (handled)
+    {
+        return exitCode;
+    }
 
     // Middleware order matters: logging observes the final response, the exception handler
     // produces envelopes, authentication runs before rate limiting so limits can be per user.
@@ -83,7 +89,13 @@ try
         app.MapScalarApiReference(options => options.WithTitle("Jex API")).AllowAnonymous().DisableRateLimiting();
     }
 
+    if (!OpenApiGeneration.IsActive)
+    {
+        await app.Services.InitialiseDatabaseAsync();
+    }
+
     await app.RunAsync();
+    return 0;
 }
 catch (Exception ex) when (ex is not HostAbortedException)
 {

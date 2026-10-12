@@ -75,7 +75,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponseOfListOfUserDto"
+                  "$ref": "#/components/schemas/ApiResponseOfIReadOnlyListOfUserDto"
                 }
               }
             }
@@ -273,7 +273,7 @@
         },
         "description": "Unified API response envelope. Every business endpoint returns HTTP 200 with this shape;\r\nint ApiResponse&lt;T&gt;.Code (see ErrorCodes) tells success from failure.\r\nEndpoints create it with ApiResponse&lt;T&gt; ApiResponse.Success&lt;T&gt;(T? data, long? totalCount = null); the\r\nApiResponseEndpointFilter fills string ApiResponse&lt;T&gt;.RequestId."
       },
-      "ApiResponseOfListOfUserDto": {
+      "ApiResponseOfIReadOnlyListOfUserDto": {
         "type": "object",
         "properties": {
           "requestId": {
@@ -547,7 +547,7 @@
             "type": "string"
           }
         },
-        "description": "Authenticates a user and returns a JWT access token."
+        "description": "Authenticates a user and returns a JWT access token. Not transactional: a failed attempt must\r\nstill persist the lockout counter even though the command throws."
       },
       "LoginResponse": {
         "required": [
@@ -593,7 +593,7 @@
           "email",
           "status",
           "createdAt",
-          "updatedAt"
+          "lastModifiedAt"
         ],
         "type": "object",
         "properties": {
@@ -624,7 +624,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "updatedAt": {
+          "lastModifiedAt": {
             "type": [
               "null",
               "string"

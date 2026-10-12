@@ -1,10 +1,15 @@
 using Jex.Application.Common.Exceptions;
 using Jex.Application.Common.Interfaces;
+using Jex.Application.Common.Messaging;
 
 namespace Jex.Application.Features.Auth.Commands.Login;
 
-/// <summary>Authenticates a user and returns a JWT access token.</summary>
-public sealed record LoginCommand(string Email, string Password) : IRequest<string>;
+/// <summary>
+/// Authenticates a user and returns a JWT access token. Not transactional: a failed attempt must
+/// still persist the lockout counter even though the command throws.
+/// </summary>
+[NonTransactional]
+public sealed record LoginCommand(string Email, string Password) : ICommand<string>;
 
 /// <summary>
 /// Handles <see cref="LoginCommand"/>. Credential, lockout and status checks live in

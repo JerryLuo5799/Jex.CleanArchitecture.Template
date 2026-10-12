@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Jex.Domain.Common;
 using Jex.Domain.Enums;
 
 namespace Jex.Domain.Entities;
@@ -21,9 +22,13 @@ public class User : IdentityUser<long>, IAuditableEntity
 
     public UserStatus Status { get; set; } = UserStatus.Active;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public long? CreatedBy { get; set; }
+
+    public DateTime? LastModifiedAt { get; set; }
+
+    public long? LastModifiedBy { get; set; }
 
     /// <summary>
     /// Persisted lockout end (UTC). <see cref="IdentityUser{TKey}.LockoutEnd"/> is a

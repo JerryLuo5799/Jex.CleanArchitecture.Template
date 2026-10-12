@@ -25,11 +25,11 @@ public sealed class Users : IEndpointGroup
         group.MapDelete(DeleteUser, "{id:long}");
     }
 
-    private static async Task<ApiResponse<List<UserDto>>> GetUsers(
+    private static async Task<ApiResponse<IReadOnlyList<UserDto>>> GetUsers(
         ISender sender, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
     {
-        var users = await sender.Send(new GetUsersQuery(page, pageSize), cancellationToken);
-        return ApiResponse.Success(users);
+        var result = await sender.Send(new GetUsersQuery(page, pageSize), cancellationToken);
+        return ApiResponse.Success(result.Items, result.TotalCount);
     }
 
     private static async Task<ApiResponse<UserDto>> GetUserById(ISender sender, long id, CancellationToken cancellationToken)

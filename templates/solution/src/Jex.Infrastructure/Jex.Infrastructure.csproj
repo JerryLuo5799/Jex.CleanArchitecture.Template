@@ -9,6 +9,9 @@
     <PackageReference Include="FreeSql" />
     <PackageReference Include="FreeSql.DbContext" />
     <PackageReference Include="FreeSql.Provider.Sqlite" />
+    <PackageReference Include="dbup-core" />
+    <PackageReference Include="dbup-sqlite" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />

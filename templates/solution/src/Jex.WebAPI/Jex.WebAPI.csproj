@@ -10,6 +10,11 @@
     <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
 
+  <!-- Versioned SQL migrations live at the solution root (db/migrations) and are embedded for DbUp. -->
+  <ItemGroup>
+    <EmbeddedResource Include="../../db/migrations/*.sql" LogicalName="%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Jex.Application\Jex.Application.csproj" />
     <ProjectReference Include="..\Jex.Infrastructure\Jex.Infrastructure.csproj" />

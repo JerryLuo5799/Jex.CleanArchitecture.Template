@@ -96,6 +96,7 @@ dotnet_naming_style.s_underscore_camel_case.capitalization = camel_case
 
 # ── Analyzer noise reduction (deliberate, documented) ──────────────────────
 dotnet_diagnostic.CA1848.severity = none     # LoggerMessage source generator: not worth the ceremony here
+dotnet_diagnostic.CA1873.severity = none     # "Expensive" log arguments: guarded with IsEnabled where it matters
 dotnet_diagnostic.CA2007.severity = none     # ConfigureAwait(false) is unnecessary in ASP.NET Core
 dotnet_diagnostic.CA1062.severity = none     # Nullable reference types already cover argument validation
 dotnet_diagnostic.CA1515.severity = none     # Public types are intentional in a template

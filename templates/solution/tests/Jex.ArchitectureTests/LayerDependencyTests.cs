@@ -1,6 +1,6 @@
 using System.Reflection;
 using Jex.Application.Common.Interfaces;
-using Jex.Domain.Entities;
+using Jex.Domain.Common;
 using Jex.Infrastructure.Persistence.Repositories;
 
 namespace Jex.ArchitectureTests;

@@ -1,4 +1,5 @@
 using Jex.Application.Common.Interfaces;
+using Jex.Application.Common.Messaging;
 using Jex.Domain.Enums;
 
 namespace Jex.Application.Features.Users.Commands.UpdateUser;
@@ -9,7 +10,7 @@ public sealed record UpdateUserCommand(
     string FirstName,
     string LastName,
     string Email,
-    UserStatus Status) : IRequest;
+    UserStatus Status) : ICommand;
 
 /// <summary>
 /// Handles <see cref="UpdateUserCommand"/>. Identity fields (email/user name) are changed through
