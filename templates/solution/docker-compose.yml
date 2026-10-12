@@ -1,0 +1,119 @@
+# Local infrastructure and an optional containerised API.
+#   task infra:up              -> database only (profile DB_PROFILE)
+#   docker compose --profile api --profile DB_PROFILE up --build   -> database + API
+# Copy .env.example to .env first.
+name: TPLNAMELOWER
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/Jex.WebAPI/Dockerfile
+    profiles: [ "api" ]
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      # Not "${JWT_SECRET:?...}": compose interpolates every service, so a required variable here would break
+      # `task infra:up`. A missing or short secret still stops the API at startup (JwtOptions validation).
+      Jwt__Secret: ${JWT_SECRET:-}
+      Migration__RunOnStartup: ${MIGRATION_RUN_ON_STARTUP:-false}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN:-*}
+#if (UseSqlite)
+    volumes:
+      - api-data:/data
+#endif
+#if (UsePostgreSQL)
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=TPLNAMELOWER;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17
+    profiles: [ "postgresql" ]
+    environment:
+      POSTGRES_DB: TPLNAMELOWER
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d TPLNAMELOWER" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+#endif
+#if (UseSqlServer)
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=TPLNAMELOWER;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Your_password123};TrustServerCertificate=True
+    depends_on:
+      sqlserver-init:
+        condition: service_completed_successfully
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    profiles: [ "sqlserver" ]
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Your_password123}
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  # SQL Server does not create databases from environment variables; run the init script once.
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    profiles: [ "sqlserver" ]
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Your_password123}
+    volumes:
+      - ./docker/db/sqlserver:/init:ro
+    entrypoint: [ "/bin/bash", "-c", "/opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -i /init/init.sql" ]
+#endif
+#if (UseMySql)
+      ConnectionStrings__DefaultConnection: Server=mysql;Port=3306;Database=TPLNAMELOWER;Uid=root;Pwd=${MYSQL_ROOT_PASSWORD:-root};
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4
+    profiles: [ "mysql" ]
+    environment:
+      MYSQL_DATABASE: TPLNAMELOWER
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -p\"$$MYSQL_ROOT_PASSWORD\"" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+#endif
+
+volumes:
+#if (UseSqlite)
+  api-data:
+#endif
+#if (UsePostgreSQL)
+  postgres-data:
+#endif
+#if (UseSqlServer)
+  sqlserver-data:
+#endif
+#if (UseMySql)
+  mysql-data:
+#endif

@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "JerryLuo",
+  "classifications": [ "Clean Architecture", "FreeSql", "Item" ],
+  "identity": "Jex.CleanArchitecture.Entity",
+  "groupIdentity": "Jex.CleanArchitecture.Entity",
+  "name": "Jex Entity",
+  "description": "Adds an entity, its repository interface + FreeSql repository, entity configuration and DTO to a Jex solution (all auto-registered). Run from the solution root.",
+  "shortName": "jex-entity",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "JexEntity",
+  "preferNameDirectory": false,
+  "symbols": {
+    "SolutionName": {
+      "type": "parameter",
+      "datatype": "text",
+      "isRequired": true,
+      "replaces": "JexSolution",
+      "fileRename": "JexSolution",
+      "description": "Solution / root namespace, e.g. Acme.Shop (the Taskfile fills this in)."
+    },
+    "PluralName": {
+      "type": "parameter",
+      "datatype": "text",
+      "isRequired": true,
+      "replaces": "JexPlural",
+      "fileRename": "JexPlural",
+      "description": "Plural name used for the feature folder and table, e.g. Orders."
+    },
+    "IncludeTest": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Also generate a unit test."
+    },
+    "TableName": {
+      "type": "derived",
+      "valueSource": "PluralName",
+      "valueTransform": "snakeCase",
+      "replaces": "TPLTABLE",
+      "description": "snake_case table name derived from the plural name (OrderLines -> order_lines)."
+    }
+  },
+  "forms": {
+    "kebab": {
+      "identifier": "kebabCase"
+    },
+    "dashToUnderscore": {
+      "identifier": "replace",
+      "pattern": "-",
+      "replacement": "_"
+    },
+    "snakeCase": {
+      "identifier": "chain",
+      "steps": [ "kebab", "dashToUnderscore" ]
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [ ".template.config/**" ],
+      "modifiers": [
+        {
+          "condition": "(!IncludeTest)",
+          "exclude": [ "tests/**" ]
+        }
+      ]
+    }
+  ],
+  "postActions": [
+    {
+      "description": "Next steps",
+      "manualInstructions": [
+        { "text": "Add properties to the entity, configure lengths/indexes in its Configuration, then run 'task db:script NAME=add-<plural>'." }
+      ],
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "continueOnError": true
+    }
+  ]
+}

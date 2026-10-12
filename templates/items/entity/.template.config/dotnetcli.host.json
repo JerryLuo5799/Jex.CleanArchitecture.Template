@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "SolutionName": { "longName": "solution-name", "shortName": "sn" },
+    "PluralName": { "longName": "plural", "shortName": "p" },
+    "IncludeTest": { "longName": "include-test", "shortName": "it" }
+  },
+  "usageExamples": [
+    "-n Order --plural Orders --solution-name Acme -o ."
+  ]
+}

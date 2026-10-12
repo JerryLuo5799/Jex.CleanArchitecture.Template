@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <!-- Integration tests run on SQLite by default so `dotnet test` needs no external database. -->
+    <PackageReference Include="FreeSql.Provider.Sqlite" />
+  </ItemGroup>
+
+  <!-- TEST_DATABASE=provider runs the suite against the real provider in a Testcontainers container. -->
+  <!--#if (UsePostgreSQL) -->
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.PostgreSql" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UseSqlServer) -->
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MsSql" />
+  </ItemGroup>
+  <!--#endif -->
+  <!--#if (UseMySql) -->
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MySql" />
+  </ItemGroup>
+  <!--#endif -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Jex.WebAPI\Jex.WebAPI.csproj" />
+  </ItemGroup>
+
+</Project>

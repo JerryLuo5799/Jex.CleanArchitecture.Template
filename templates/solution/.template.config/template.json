@@ -1,0 +1,402 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "JerryLuo",
+  "classifications": [ "Web", "API", "Clean Architecture", "CQRS", "Minimal API" ],
+  "identity": "Jex.CleanArchitecture.Solution",
+  "groupIdentity": "Jex.CleanArchitecture",
+  "name": "Jex Clean Architecture Solution",
+  "shortName": "jex",
+  "description": "Clean Architecture Web API for .NET 10: Minimal API endpoint groups, MediatR CQRS, FluentValidation, FreeSql Code First, JWT auth, tests, Docker, optional Aspire, and AGENTS.md for AI-assisted development.",
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "_renaming": "No sourceName: NameSafe (safe_namespace form of --name) drives both file renames and content so folders and namespaces always agree, even for names such as my-api.",
+  "preferNameDirectory": true,
+  "constraints": {
+    "dotnet-sdk": {
+      "type": "sdk-version",
+      "args": "[10.0,)"
+    }
+  },
+  "guids": [
+    "8f3c2d5e-1b4a-4c6d-9e7f-0a1b2c3d4e5f",
+    "3c7b3c0a-6e3f-4d6d-9d2a-7f4e2b1c8a90",
+    "b2a9f1d4-5c6e-4f7a-8b9c-0d1e2f3a4b5c"
+  ],
+  "symbols": {
+    "database": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "sqlite",
+      "description": "Database provider used by FreeSql.",
+      "choices": [
+        { "choice": "sqlite", "description": "SQLite (file database, no infrastructure)" },
+        { "choice": "postgresql", "description": "PostgreSQL" },
+        { "choice": "sqlserver", "description": "SQL Server" },
+        { "choice": "mysql", "description": "MySQL / MariaDB" }
+      ]
+    },
+    "UseAspire": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Add a .NET Aspire AppHost project (ServiceDefaults are always included)."
+    },
+    "IncludeAiDocs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include AGENTS.md, CLAUDE.md, Copilot instructions, .claude skills and .mcp.json."
+    },
+    "IncludeDocker": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include Dockerfile, docker-compose.yml and database init scripts."
+    },
+    "UseSqlite": { "type": "computed", "value": "(database == \"sqlite\")" },
+    "UsePostgreSQL": { "type": "computed", "value": "(database == \"postgresql\")" },
+    "UseSqlServer": { "type": "computed", "value": "(database == \"sqlserver\")" },
+    "UseMySql": { "type": "computed", "value": "(database == \"mysql\")" },
+    "DatabaseProviderName": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "FREESQL_PROVIDER",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": "PostgreSQL" },
+          { "condition": "(UseSqlServer)", "value": "SqlServer" },
+          { "condition": "(UseMySql)", "value": "MySql" },
+          { "condition": "(true)", "value": "Sqlite" }
+        ]
+      }
+    },
+    "ConnectionPrefix": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "TPLCONN_PREFIX",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": "Host=localhost;Port=5432;Database=" },
+          { "condition": "(UseSqlServer)", "value": "Server=localhost,1433;Database=" },
+          { "condition": "(UseMySql)", "value": "Server=localhost;Port=3306;Database=" },
+          { "condition": "(true)", "value": "Data Source=" }
+        ]
+      }
+    },
+    "ConnectionSuffix": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "TPLCONN_SUFFIX",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": ";Username=postgres;Password=postgres" },
+          { "condition": "(UseSqlServer)", "value": ";User Id=sa;Password=Your_password123;TrustServerCertificate=True" },
+          { "condition": "(UseMySql)", "value": ";Uid=root;Pwd=root;" },
+          { "condition": "(true)", "value": ".db" }
+        ]
+      }
+    },
+    "DatabaseProfile": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "DB_PROFILE",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(UsePostgreSQL)", "value": "postgresql" },
+          { "condition": "(UseSqlServer)", "value": "sqlserver" },
+          { "condition": "(UseMySql)", "value": "mysql" },
+          { "condition": "(true)", "value": "none" }
+        ]
+      }
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, skips the automatic restore of the project on create."
+    },
+    "HttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json (random if omitted)."
+    },
+    "HttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json (random if omitted)."
+    },
+
+    "NameSafe": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "safeNamespace",
+      "replaces": "Jex",
+      "fileRename": "Jex",
+      "description": "Project name as a valid C# namespace (e.g. my-api -> my_api). Used for file names and namespaces."
+    },
+    "NameLower": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "kebabCase",
+      "replaces": "TPLNAMELOWER",
+      "description": "Kebab-case project name used for Docker Compose, container and image names."
+    },
+    "TemplatePrefix": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "jex"
+      },
+      "replaces": "TPLPREFIX",
+      "description": "Short-name prefix of the item templates (jex-usecase etc.). Kept out of sourceName rewriting."
+    },
+
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300,
+        "fallback": 5208
+      }
+    },
+    "HttpPortValue": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
+      }
+    },
+    "HttpUrlReplacer": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          { "type": "const", "value": "localhost:" },
+          { "type": "ref", "value": "HttpPortValue" }
+        ]
+      },
+      "replaces": "localhost:5208"
+    },
+    "HttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300,
+        "fallback": 7025
+      }
+    },
+    "HttpsPortValue": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpsPort",
+        "fallbackVariableName": "HttpsPortGenerated"
+      }
+    },
+    "HttpsUrlReplacer": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          { "type": "const", "value": "localhost:" },
+          { "type": "ref", "value": "HttpsPortValue" }
+        ]
+      },
+      "replaces": "localhost:7025"
+    }
+  },
+  "forms": {
+    "kebabCase": {
+      "identifier": "kebabCase"
+    },
+    "safeNamespace": {
+      "identifier": "safe_namespace"
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        "**/[Bb]in/**",
+        "**/[Oo]bj/**",
+        "**/.vs/**",
+        "**/.idea/**",
+        "**/*.user",
+        "**/*.lock.json",
+        "**/.git/**",
+        "**/logs/**",
+        "**/*.db",
+        "**/*.db-*",
+        "**/TestResults/**",
+        "**/artifacts/**",
+        ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(UseSqlite)",
+          "exclude": [ "tests/Jex.IntegrationTests/Database/ContainerTestDatabase.cs" ]
+        },
+        {
+          "condition": "(!UseAspire)",
+          "exclude": [ "src/Jex.AppHost/**" ]
+        },
+        {
+          "condition": "(!IncludeAiDocs)",
+          "exclude": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            ".claude/**",
+            ".mcp.json",
+            ".github/copilot-instructions.md",
+            ".github/instructions/**"
+          ]
+        },
+        {
+          "condition": "(!IncludeDocker)",
+          "exclude": [
+            "docker-compose.yml",
+            ".dockerignore",
+            ".env.example",
+            "docker/**",
+            "src/Jex.WebAPI/Dockerfile"
+          ]
+        }
+      ]
+    }
+  ],
+  "SpecialCustomOperations": {
+    "**/*.json": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "//#if" ],
+            "else": [ "//#else" ],
+            "elseif": [ "//#elseif" ],
+            "endif": [ "//#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/*.slnx": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "<!--#if" ],
+            "else": [ "<!--#else" ],
+            "elseif": [ "<!--#elseif" ],
+            "endif": [ "<!--#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "<!--#if" ],
+            "else": [ "<!--#else" ],
+            "elseif": [ "<!--#elseif" ],
+            "endif": [ "<!--#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/*.{yml,yaml,http,txt,gitignore,dockerignore,sql,example}": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/Dockerfile": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/.env.example": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif" ],
+            "endif": [ "#endif" ],
+            "trim": true,
+            "wholeLine": true,
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  },
+  "primaryOutputs": [
+    { "path": "src/Jex.Domain/Jex.Domain.csproj" },
+    { "path": "src/Jex.Application/Jex.Application.csproj" },
+    { "path": "src/Jex.Infrastructure/Jex.Infrastructure.csproj" },
+    { "path": "src/Jex.ServiceDefaults/Jex.ServiceDefaults.csproj" },
+    { "path": "src/Jex.WebAPI/Jex.WebAPI.csproj" },
+    { "path": "src/Jex.AppHost/Jex.AppHost.csproj", "condition": "(UseAspire)" },
+    { "path": "tests/Jex.UnitTests/Jex.UnitTests.csproj" },
+    { "path": "tests/Jex.IntegrationTests/Jex.IntegrationTests.csproj" },
+    { "path": "tests/Jex.ArchitectureTests/Jex.ArchitectureTests.csproj" }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet restore'" }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

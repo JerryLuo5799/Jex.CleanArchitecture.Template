@@ -1,31 +1,83 @@
-name: CI
+# Reusable: strict check of the template source, then pack the NuGet package once.
+# Called by pipeline.yml (PR / push / manual) and release.yml (tags). Never triggered directly, so every
+# entry point produces exactly one package that the template matrix then verifies.
+name: ci
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      version:
+        description: Package version to stamp into the nupkg.
+        required: true
+        type: string
+    outputs:
+      artifact-name:
+        description: Name of the uploaded nupkg artifact.
+        value: ${{ jobs.pack.outputs.artifact-name }}
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  SOLUTION: templates/solution/Jex.slnx
 
 jobs:
-  build-and-test:
+  check:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          global-json-file: global.json
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION }}
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Format check
+        run: dotnet format ${{ env.SOLUTION }} --no-restore --verify-no-changes
+
+      - name: Build (warnings as errors, NU1903/NU1904 fail)
+        run: dotnet build ${{ env.SOLUTION }} --no-restore -c Release -p:ContinuousIntegrationBuild=true
+
+      - name: OpenAPI contract is up to date
+        run: |
+          git diff --exit-code -- templates/solution/openapi.json || {
+            echo "::error::openapi.json changed during the build. Run 'task build' locally and commit the regenerated file."
+            exit 1
+          }
 
       - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
+        working-directory: templates/solution
+        run: dotnet test --solution Jex.slnx --no-build -c Release --report-trx --results-directory ../../TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: TestResults
+
+  pack:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      artifact-name: nupkg-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Pack
+        run: dotnet pack Jex.CleanArchitecture.Template.csproj -c Release -p:PackageVersion=${{ inputs.version }} -o artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nupkg-${{ github.run_id }}
+          path: artifacts/*.nupkg
+          if-no-files-found: error

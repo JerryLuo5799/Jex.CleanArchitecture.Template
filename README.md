@@ -1,248 +1,85 @@
 # Jex.CleanArchitecture.Template
 
-Jex is a lightweight, opinionated Clean Architecture template for .NET 10. Designed to eliminate boilerplate and accelerate backend development with modern C# practices.
+一个面向 **AI 辅助开发** 的 .NET 10 Web API 项目模板：一条命令在本地生成项目，生成的项目自带清晰的分层架构、统一的开发规范、脚手架命令和一份 `AGENTS.md`，Claude Code、GitHub Copilot、Cursor 打开就能按规范写代码。
 
-## 🏗️ Architecture Overview
+参考了 [jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture)（管道行为、端点组、item template）与 [netcorepal/netcorepal-cloud-template](https://github.com/netcorepal/netcorepal-cloud-template)（AI 指令、错误码、分页、compose profiles）。
 
-```
-src/
-├── Jex.Domain/           # Entities, enums — zero infrastructure dependencies
-├── Jex.Application/      # CQRS (MediatR), Sannr validation, DTOs, interfaces
-├── Jex.Infrastructure/   # FreeSQL (Code First), Identity, repositories, DI wiring
-└── Jex.WebAPI/           # ASP.NET Core controllers, middleware, JWT auth, startup
-```
-
-### Dependency Rule
-
-```
-WebAPI → Application ← Infrastructure
-           ↓
-         Domain
-```
-
-The Domain layer has **no** NuGet dependencies. Every other layer depends inward only.
-
-## 🚀 Key Technologies
-
-| Layer | Technology | Purpose |
-|---|---|---|
-| Domain | Pure C# | Entities and enums |
-| Application | [MediatR 12](https://github.com/jbogard/MediatR) | CQRS — commands & queries |
-| Application | [Sannr 1.4](https://github.com/Tim-Maes/Sannr) | Compile-time input validation (source generator) |
-| Infrastructure | [FreeSQL 3.5](https://freesql.net) | ORM with Code First auto-migration |
-| Infrastructure | ASP.NET Core Identity | User management and password hashing |
-| Infrastructure | SQLite (default) | Swappable via `Database:Provider` config |
-| WebAPI | ASP.NET Core 10 | Minimal REST API with OpenAPI |
-| WebAPI | JWT Bearer | Stateless authentication |
-| WebAPI | [NLog 6](https://nlog-project.org) | Structured request/SQL logging |
-
-## ✅ Sannr — Compile-Time Input Validation
-
-**Sannr** is a C# source generator that provides zero-reflection, compile-time validation. Validators are registered once at startup and executed automatically via a MediatR pipeline behavior before every handler.
-
-```csharp
-// Register rules once in DependencyInjection.cs
-Sannr.AspNetCore.SannrValidatorRegistry.Register<CreateUserCommand>(cmd =>
-{
-    var result = new ValidationResult();
-
-    if (string.IsNullOrWhiteSpace(cmd.Email))
-        result.Add(nameof(cmd.Email), "Email is required.", Severity.Error);
-
-    return Task.FromResult(result);
-});
-```
-
-A `ValidationBehavior<TRequest, TResponse>` MediatR pipeline behavior runs all registered Sannr validators before every handler and throws `ValidationException` when any rule fails.
-
-## 🔐 ASP.NET Core Identity & JWT
-
-User management (password hashing, user creation, credential validation) is handled by **ASP.NET Core Identity** backed by FreeSQL custom stores (`FreeSqlUserStore`, `FreeSqlRoleStore`). All credential lifecycle concerns are encapsulated behind the `IIdentityService` interface in the Application layer.
-
-Authentication uses **JWT Bearer** tokens. On successful login the `TokenService` issues a signed HS256 token. All user endpoints require a valid token via `[Authorize]`.
-
-Configure the JWT secret in `appsettings.json` (override in production via environment variables or secrets):
-
-```json
-{
-  "Jwt": {
-    "Secret": "CHANGE-THIS-TO-A-STRONG-SECRET-KEY-AT-LEAST-32-CHARS",
-    "Issuer": "Jex",
-    "Audience": "Jex",
-    "ExpiryMinutes": "60"
-  }
-}
-```
-
-> **⚠️ Important:** The application will refuse to start if the default placeholder secret is used unchanged.
-
-## ⚡ FreeSQL — Code First
-
-FreeSQL maps entities using **data annotation attributes** directly on entity properties:
-
-```csharp
-// Domain/Entities/User.cs
-[Table("users")]
-public class User : IdentityUser<long>, IAuditableEntity
-{
-    [MaxLength(100)]
-    [Required]
-    public string FirstName { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    [Required]
-    public string LastName { get; set; } = string.Empty;
-
-    public UserStatus Status { get; set; } = UserStatus.Active;
-    // ...
-}
-```
-
-`UseAutoSyncStructure(true)` automatically creates/migrates tables on startup — no migration files needed.
-
-## 📡 CQRS with MediatR
-
-Every feature is a self-contained vertical slice:
-
-```
-Features/
-├── Auth/
-│   └── Commands/
-│       └── Login/    LoginCommand, Handler, Validator
-└── Users/
-    ├── Commands/
-    │   ├── CreateUser/   CreateUserCommand, Handler, Validator
-    │   ├── UpdateUser/   UpdateUserCommand, Handler, Validator
-    │   └── DeleteUser/   DeleteUserCommand, Handler
-    └── Queries/
-        ├── GetUserById/  GetUserByIdQuery, Handler, UserDto
-        └── GetUsers/     GetUsersQuery, Handler
-```
-
-A `ValidationBehavior<TRequest, TResponse>` MediatR pipeline behavior automatically runs Sannr validators before every handler.
-
-## 🔧 Getting Started
-
-### Prerequisites
-
-- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-
-### Install the Template
-
-Install the template from NuGet:
+## 快速开始
 
 ```bash
 dotnet new install Jex.CleanArchitecture.Template
+dotnet new jex -n Acme.Shop                       # SQLite，开箱即跑
+cd Acme.Shop
+task check                                        # 格式化 + 构建 + 全部测试（需要 go-task；等价 dotnet 命令见生成项目的 AGENTS.md）
+task run                                          # http://localhost:<随机端口>/scalar
 ```
 
-### Create a New Project
+开发环境首次启动会自动建表并创建管理员 `admin@example.com / Admin123!`。
+
+其它组合：
 
 ```bash
-dotnet new jex -n YourProjectName
+dotnet new jex -n Acme --database postgresql --use-aspire     # PostgreSQL + .NET Aspire 编排
+dotnet new jex -n Acme --include-ai-docs false --include-docker false
 ```
 
-This will scaffold a complete Clean Architecture solution under `YourProjectName/`.
-
-### Run
-
-```bash
-cd YourProjectName/src/YourProjectName.WebAPI
-dotnet run
-```
-
-The app will:
-1. Create `jex.db` (SQLite, Code First — tables auto-created)
-2. Expose the REST API at `http://localhost:5208`
-3. Serve OpenAPI at `http://localhost:5208/openapi/v1.json`
-
-### Uninstall the Template
-
-```bash
-dotnet new uninstall Jex.CleanArchitecture.Template
-```
-
-### API Endpoints
-
-| Method | Path | Auth | Description |
+| 参数 | 短名 | 默认 | 说明 |
 |---|---|---|---|
-| `POST` | `/api/auth/login` | ❌ | Authenticate and receive JWT token |
-| `GET` | `/api/users` | ✅ JWT | List users (paginated) |
-| `GET` | `/api/users/{id}` | ✅ JWT | Get user by Id |
-| `POST` | `/api/users` | ✅ JWT | Create user |
-| `PUT` | `/api/users/{id}` | ✅ JWT | Update user |
-| `DELETE` | `/api/users/{id}` | ✅ JWT | Delete user |
+| `--database` | `-db` | `sqlite` | `sqlite` / `postgresql` / `sqlserver` / `mysql`，决定 FreeSql 与 DbUp 提供程序、连接串、compose 服务 |
+| `--use-aspire` | `-aspire` | `false` | 生成 `*.AppHost`（ServiceDefaults 始终包含） |
+| `--include-ai-docs` | `-ai` | `true` | `AGENTS.md`、`CLAUDE.md`、`.claude/`、Copilot 指令、`.mcp.json` |
+| `--include-docker` | `-docker` | `true` | `Dockerfile`、`docker-compose.yml`、`.env.example` |
+| `--http-port` / `--https-port` | `-hp` / `-hsp` | 随机 | launchSettings 端口 |
+| `--skip-restore` | `-sr` | `false` | 跳过生成后的 restore |
 
-### Switch Database Provider
+完整说明见 [docs/template-parameters.md](docs/template-parameters.md)。
 
-Change `appsettings.json` to use a different FreeSQL provider:
+## 生成的项目包含什么
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=jex;User=root;Password=pass;"
-  },
-  "Database": {
-    "Provider": "MySql"
-  }
-}
+- **架构**：Domain / Application / Infrastructure / WebAPI 四层，依赖规则由架构测试强制。
+- **CQRS**：MediatR 12（`ICommand` / `IQuery<T>`），管道行为：日志 → 未处理异常 → 授权（`[AuthorizeRequest]`）→ FluentValidation → 性能 → 工作单元。
+- **数据**：FreeSql Code First，仓储只写脏列，审计字段自动填充，软删除（仅活跃记录唯一），领域事件在事务内派发；生产用 DbUp 执行已审阅的 SQL 迁移。
+- **API**：Minimal API `IEndpointGroup`，统一 HTTP 200 + `{ requestId, code, msg, data, totalCount, errors }` 信封，Scalar UI，构建时生成并提交 `openapi.json`。
+- **安全与运维**：ASP.NET Core Identity + JWT、锁定与状态校验、CORS、限流、健康检查、NLog、OpenTelemetry（可选 Aspire）、Docker。
+- **测试**：xunit.v3 + MTP、Shouldly；单元、集成（SQLite 或 Testcontainers 真实数据库）、架构测试；`TransactionRollbackTests` 覆盖嵌套事务与事件回滚。
+- **AI 开发**：`AGENTS.md`（唯一规范来源）、`CLAUDE.md`、`/new-feature` 与 `/review-architecture` skills、按路径生效的 Copilot 指令、收窄的权限白名单。
+- **脚手架**：`task scaffold:feature ENTITY=Order PLURAL=Orders` 一次生成实体、仓储、配置、DTO、命令、查询、端点和测试，生成即可通过 `task check`。
+
+## Item templates
+
+在生成项目的根目录运行（Taskfile 已封装）：
+
+| 模板 | 作用 | 示例 |
+|---|---|---|
+| `jex-entity` | 实体 + 仓储接口/实现 + 实体配置 + DTO + 单测 | `dotnet new jex-entity -n Order --plural Orders --solution-name Acme -o .` |
+| `jex-usecase` | Command（+Handler+Validator）或 Query（+Handler）+ 单测 | `dotnet new jex-usecase -n CreateOrder --feature Orders --usecase-type command --return-type long --solution-name Acme -o .` |
+| `jex-endpoint` | `IEndpointGroup`（可选 `--entity` 映射 Create/GetById + 集成测试） | `dotnet new jex-endpoint -n Orders --entity Order --solution-name Acme -o .` |
+
+详见 [docs/scaffolding.md](docs/scaffolding.md)。
+
+## 开发本模板
+
+```bash
+task check:ci            # 严格检查模板源码（templates/solution）
+task init                # 从当前目录安装全部 4 个模板（开发循环，无需打包）
+task new NAME=Acme DB=postgresql ASPIRE=true
+task new:check           # 严格检查刚生成的项目
+task template:test-all   # 6 种组合：生成 → 结构断言 → 脚手架 → 格式/构建/测试
+task init:pkg            # 打包后从 nupkg 安装（发布验收路径）
 ```
 
-Add the corresponding FreeSQL provider package (e.g., `FreeSql.Provider.MySql`).
+仓库结构、占位符规则与发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## 📁 Project Structure
+## 文档
 
-```
-src/
-├── Jex.Domain/
-│   ├── Entities/
-│   │   ├── ApplicationRole.cs   # ASP.NET Core Identity role entity
-│   │   ├── BaseEntity.cs        # Id, CreatedAt, UpdatedAt (for non-Identity entities)
-│   │   ├── IAuditableEntity.cs  # Audit field contract
-│   │   ├── User.cs              # Identity user + domain fields
-│   │   └── UserRole.cs          # User–role join entity
-│   └── Enums/
-│       └── UserStatus.cs
-│
-├── Jex.Application/
-│   ├── Common/
-│   │   ├── Behaviors/
-│   │   │   └── ValidationBehavior.cs   # MediatR pipeline — runs Sannr validators
-│   │   ├── Exceptions/
-│   │   │   ├── NotFoundException.cs
-│   │   │   └── ValidationException.cs
-│   │   ├── IIdentityService.cs         # Abstraction over Identity operations
-│   │   ├── IRepository.cs              # Generic repository interface
-│   │   └── IUserRepository.cs
-│   ├── Features/
-│   │   ├── Auth/
-│   │   │   └── Commands/
-│   │   │       └── Login/              # LoginCommand, Handler, Validator
-│   │   └── Users/
-│   │       ├── Commands/               # CreateUser, UpdateUser, DeleteUser
-│   │       └── Queries/                # GetUserById (with UserDto), GetUsers
-│   └── DependencyInjection.cs
-│
-├── Jex.Infrastructure/
-│   ├── Identity/
-│   │   ├── FreeSqlRoleStore.cs         # IQueryableRoleStore backed by FreeSQL
-│   │   ├── FreeSqlUserStore.cs         # IQueryableUserStore backed by FreeSQL
-│   │   ├── IdentityService.cs          # IIdentityService implementation
-│   │   └── TokenService.cs             # JWT token generation
-│   ├── Persistence/
-│   │   └── Repositories/
-│   │       ├── Repository.cs           # Generic FreeSQL repository
-│   │       └── UserRepository.cs
-│   └── DependencyInjection.cs
-│
-└── Jex.WebAPI/
-    ├── Controllers/
-    │   ├── AuthController.cs           # POST /api/auth/login
-    │   └── UsersController.cs          # CRUD /api/users (JWT-protected)
-    ├── Middleware/
-    │   └── ApiLoggingMiddleware.cs     # Structured request/response logging via NLog
-    ├── Models/
-    │   └── ApiResponse.cs              # Unified response envelope
-    ├── Program.cs                      # DI wiring, JWT, exception handler
-    ├── appsettings.json
-    └── nlog.config
-```
+- [快速上手](docs/getting-started.md)
+- [模板参数](docs/template-parameters.md)
+- [脚手架](docs/scaffolding.md)
+- [与 AI 助手协作](docs/ai-agents.md)
+- [路线图与不做的事](docs/roadmap.md)
+- [模板仓库的架构决策](docs/decisions/)
+- [变更记录](CHANGELOG.md)
+
+## 许可证
+
+[MIT](LICENSE)

@@ -1,0 +1,5 @@
+# Normalize line endings: LF in the repository and on checkout (matches .editorconfig / dotnet format).
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.nupkg binary

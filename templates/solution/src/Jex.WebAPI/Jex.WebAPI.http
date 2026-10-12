@@ -1,0 +1,48 @@
+@host = http://localhost:5208
+@token = {{login.response.body.$.data.token}}
+
+### Login (seeded admin in Development; see Seed section of appsettings.Development.json)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin123!"
+}
+
+### Create user
+POST {{host}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane.doe@example.com",
+  "password": "Secure123!"
+}
+
+### List users
+GET {{host}}/api/users?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### Get user by id
+GET {{host}}/api/users/1
+Authorization: Bearer {{token}}
+
+### Update user
+PUT {{host}}/api/users/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane.smith@example.com",
+  "status": 1
+}
+
+### Delete user
+DELETE {{host}}/api/users/1
+Authorization: Bearer {{token}}

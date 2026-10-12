@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(task check)",
+      "Bash(task check:ci)",
+      "Bash(task build)",
+      "Bash(task test)",
+      "Bash(task test:*)",
+      "Bash(task format)",
+      "Bash(task format:check)",
+      "Bash(task scaffold:*)",
+      "Bash(task db:script *)",
+      "Bash(task db:migrate:dry-run)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(dotnet format *)",
+      "Bash(dotnet new TPLPREFIX-*)",
+      "Bash(dotnet new list *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(rm -rf*)",
+      "Bash(task db:reset)",
+      "Read(./.env)",
+      "Read(./src/Jex.WebAPI/appsettings.Production.json)"
+    ]
+  }
+}

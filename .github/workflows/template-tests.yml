@@ -1,0 +1,66 @@
+# Reusable: install the nupkg produced by ci.yml in the same run, generate every supported template
+# combination, scaffold a feature with the item templates and run the strict gate in each project.
+name: template-tests
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: nupkg artifact uploaded by ci.yml in this run.
+        required: true
+        type: string
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  matrix:
+    name: ${{ matrix.cell }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { cell: sqlite, os: ubuntu-latest, test-database: sqlite, docker: true }
+          - { cell: sqlite, os: windows-latest, test-database: sqlite, docker: false }
+          - { cell: postgresql, os: ubuntu-latest, test-database: provider, docker: false }
+          - { cell: sqlserver, os: ubuntu-latest, test-database: provider, docker: false }
+          - { cell: mysql, os: ubuntu-latest, test-database: provider, docker: false }
+          - { cell: aspire, os: ubuntu-latest, test-database: provider, docker: true }
+          - { cell: bare, os: ubuntu-latest, test-database: sqlite, docker: false }
+    env:
+      # provider = run integration tests against the real database in Testcontainers; a missing
+      # Docker daemon fails the job instead of silently falling back to SQLite.
+      TEST_DATABASE: ${{ matrix.test-database }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: nupkg
+
+      - name: Generate, scaffold and verify
+        shell: bash
+        run: |
+          package=$(ls nupkg/*.nupkg | head -n 1)
+          extra=""
+          if [ "${{ matrix.docker }}" = "true" ]; then extra="--docker"; fi
+          dotnet run --file scripts/test-template-matrix.cs -- --package "$package" --cells ${{ matrix.cell }} $extra
+
+      - name: Upload generated project on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-${{ matrix.cell }}-${{ matrix.os }}
+          path: |
+            artifacts/matrix
+            !artifacts/matrix/**/bin
+            !artifacts/matrix/**/obj

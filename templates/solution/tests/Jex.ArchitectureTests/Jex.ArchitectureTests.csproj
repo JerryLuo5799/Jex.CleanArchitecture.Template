@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Jex.Domain\Jex.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Jex.Application\Jex.Application.csproj" />
+    <ProjectReference Include="..\..\src\Jex.Infrastructure\Jex.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Jex.WebAPI\Jex.WebAPI.csproj" />
+  </ItemGroup>
+
+</Project>
