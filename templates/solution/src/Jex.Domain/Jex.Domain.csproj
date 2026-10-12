@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <!-- Only the Identity entity base types (IdentityUser/IdentityRole); no ASP.NET Core framework reference. -->
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
+    <PackageReference Include="MediatR.Contracts" />
+  </ItemGroup>
+
+</Project>

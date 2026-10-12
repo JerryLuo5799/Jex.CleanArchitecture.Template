@@ -1,0 +1,12 @@
+# Banned APIs (Microsoft.CodeAnalysis.BannedApiAnalyzers, diagnostic RS0030).
+# Format: <documentation-id>;<message>
+P:System.DateTime.Now;Use TimeProvider.GetUtcNow() so time is injectable and testable.
+P:System.DateTimeOffset.Now;Use TimeProvider.GetUtcNow() so time is injectable and testable.
+M:System.Threading.Tasks.Task.Wait;Use await instead of blocking.
+M:System.Threading.Tasks.Task.Wait(System.Threading.CancellationToken);Use await instead of blocking.
+M:System.Threading.Tasks.Task.Wait(System.Int32);Use await instead of blocking.
+P:System.Threading.Tasks.Task`1.Result;Use await instead of blocking.
+M:System.Console.WriteLine;Use ILogger<T> instead of Console.
+M:System.Console.WriteLine(System.String);Use ILogger<T> instead of Console.
+M:System.Console.Write(System.String);Use ILogger<T> instead of Console.
+N:AutoMapper;Map DTOs by hand (static Dto From(Entity)) or with FreeSql projections. See AGENTS.md.

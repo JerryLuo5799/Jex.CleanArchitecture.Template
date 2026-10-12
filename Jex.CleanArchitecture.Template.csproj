@@ -1,35 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    Template package project. It produces a NuGet package of PackageType=Template that contains
+    every template under templates/ (the solution template plus the item templates).
+    It never compiles anything: all C# under templates/ is content.
+  -->
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>2.0.0</PackageVersion>
     <PackageId>Jex.CleanArchitecture.Template</PackageId>
     <Title>Jex Clean Architecture</Title>
     <Authors>JerryLuo</Authors>
-    <Description>A lightweight, opinionated Clean Architecture template for .NET 10 with CQRS (MediatR), FreeSQL (Code First), JWT authentication, FluentValidation, and built-in unit/integration/architecture tests.</Description>
-    <PackageTags>dotnet-new template clean-architecture cqrs freesql mediatr jwt</PackageTags>
+    <Description>Opinionated Clean Architecture template for .NET 10: Minimal API endpoint groups, MediatR CQRS with pipeline behaviours, FluentValidation, FreeSql Code First with versioned migrations, JWT auth, unit/integration/architecture tests, Docker, optional .NET Aspire, and AGENTS.md for AI-assisted development. Includes jex-usecase / jex-endpoint / jex-entity item templates.</Description>
+    <PackageTags>dotnet-new;templates;clean-architecture;cqrs;minimal-api;freesql;mediatr;fluentvalidation;jwt;aspire;ai-agents</PackageTags>
     <PackageProjectUrl>https://github.com/JerryLuo5799/Jex.CleanArchitecture.Template</PackageProjectUrl>
     <RepositoryUrl>https://github.com/JerryLuo5799/Jex.CleanArchitecture.Template</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon Condition="Exists('docs/icon.png')">icon.png</PackageIcon>
+    <!-- Dotfiles (.editorconfig, .gitignore, .template.config, .github, .claude) are template content. -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+
     <TargetFramework>net10.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <NoWarn>$(NoWarn);NU5128;NU5110</NoWarn>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);NU5128;NU5110;NU5111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include=".template.config\**" />
-    <Content Include="src\**" Exclude="src\**\bin\**;src\**\obj\**" />
-    <Content Include="tests\**" Exclude="tests\**\bin\**;tests\**\obj\**" />
-    <Content Include="scripts\**" />
-    <Content Include="Jex.CleanArchitecture.Template.slnx" />
-    <Content Include="LICENSE" />
-    <Content Include="README.md" />
+    <Content Include="templates\**"
+             Exclude="templates\**\bin\**;templates\**\obj\**;templates\**\.vs\**;templates\**\*.user;templates\**\logs\**;templates\**\*.db;templates\**\*.db-*;templates\**\TestResults\**;templates\**\artifacts\**" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="docs\icon.png" Pack="true" PackagePath="\" Condition="Exists('docs\icon.png')" />
   </ItemGroup>
 
 </Project>

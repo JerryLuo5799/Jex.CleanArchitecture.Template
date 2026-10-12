@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <!-- Integration tests always run on SQLite so `dotnet test` needs no external database. -->
+    <PackageReference Include="FreeSql.Provider.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Jex.WebAPI\Jex.WebAPI.csproj" />
+  </ItemGroup>
+
+</Project>
