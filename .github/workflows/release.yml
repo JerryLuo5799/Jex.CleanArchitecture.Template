@@ -80,6 +80,11 @@ jobs:
         run: dotnet nuget push nupkg/*.nupkg --api-key ${{ steps.nuget.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: GitHub release
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" nupkg/*.nupkg --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        run: |
+          # Pre-release versions (3.0.0-rc.1) must not become the repository's "Latest" release.
+          flags=""
+          if [[ "${{ needs.version.outputs.version }}" == *-* ]]; then flags="--prerelease --latest=false"; fi
+          gh release create "$GITHUB_REF_NAME" nupkg/*.nupkg --title "$GITHUB_REF_NAME" --generate-notes --verify-tag $flags

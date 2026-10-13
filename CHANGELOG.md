@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### 修复
+
+- 预发布版本（如 `3.0.0-rc.1`）的 GitHub Release 标记为 Pre-release，不再成为仓库的 Latest release。
+
 ## [3.0.0-rc.1]
 
 **破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`。
