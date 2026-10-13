@@ -67,7 +67,7 @@ public sealed partial class TemplateInstaller(CliContext context)
             context.RunAllowingFailure(context.CurrentDirectory, "dotnet", ["new", "uninstall", decision.UninstallSource]);
         }
 
-        context.Run(context.CurrentDirectory, "dotnet", ["new", "install", $"{TemplatePolicy.PackageId}::{decision.Version}", "--force"]);
+        context.Run(context.CurrentDirectory, "dotnet", ["new", "install", $"{TemplatePolicy.PackageId}@{decision.Version}", "--force"]);
     }
 
     public void CheckForScaffold(string? projectVersion, SemVer? requested, bool force)

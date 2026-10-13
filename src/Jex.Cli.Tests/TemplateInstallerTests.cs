@@ -151,7 +151,7 @@ public sealed class TemplateInstallerTests
         harness.Run("new", "Acme", "--database", "postgresql").ShouldBe(0);
 
         harness.Runner.CommandLines.ShouldBe([
-            "dotnet new install Jex.CleanArchitecture.Template::2.1.0 --force",
+            "dotnet new install Jex.CleanArchitecture.Template@2.1.0 --force",
             "dotnet new jex -n Acme --database postgresql",
         ]);
     }
@@ -188,7 +188,7 @@ public sealed class TemplateInstallerTests
     {
         var ex = Should.Throw<JexException>(() => TemplatePolicy.ForScaffold(project, Package(installed), requested is null ? null : V(requested), force: false));
 
-        ex.Message.ShouldContain("dotnet new install Jex.CleanArchitecture.Template::");
+        ex.Message.ShouldContain("dotnet new install Jex.CleanArchitecture.Template@");
         ex.Message.ShouldContain("--force");
     }
 
@@ -214,7 +214,7 @@ public sealed class TemplateInstallerTests
     [Fact]
     public void Scaffold_without_templates_never_installs()
     {
-        Should.Throw<JexException>(() => TemplatePolicy.ForScaffold("2.0.0", null, null, false)).Message.ShouldContain("::2.0.0");
+        Should.Throw<JexException>(() => TemplatePolicy.ForScaffold("2.0.0", null, null, false)).Message.ShouldContain("@2.0.0");
     }
 
     private static SemVer V(string text) => SemVer.Parse(text);

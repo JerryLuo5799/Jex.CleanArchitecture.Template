@@ -7,6 +7,7 @@
 ### 修复
 
 - 预发布版本（如 `3.0.0-rc.1`）的 GitHub Release 标记为 Pre-release，不再成为仓库的 Latest release。
+- `jex new` 安装模板包与各处提示改用 `Jex.CleanArchitecture.Template@<版本>`（`::` 分隔符已被 .NET SDK 弃用）。
 
 ## [3.0.0-rc.1]
 

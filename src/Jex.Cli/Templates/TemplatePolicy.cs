@@ -55,7 +55,7 @@ public static class TemplatePolicy
         {
             if (noInstall)
             {
-                throw new JexException($"The Jex templates are not installed. Run 'dotnet new install {PackageId}::{target}', or rerun without --no-install.");
+                throw new JexException($"The Jex templates are not installed. Run 'dotnet new install {PackageId}@{target}', or rerun without --no-install.");
             }
 
             messages.Add($"Installing {PackageId} {target}.");
@@ -82,7 +82,7 @@ public static class TemplatePolicy
         if (noInstall)
         {
             throw new JexException(
-                $"Templates {installed.Display} are installed but {target} is required. Rerun without --no-install, or run 'dotnet new install {PackageId}::{target} --force'.");
+                $"Templates {installed.Display} are installed but {target} is required. Rerun without --no-install, or run 'dotnet new install {PackageId}@{target} --force'.");
         }
 
         messages.Add($"Switching the Jex templates: {installed.Display} -> {target}.");
@@ -111,7 +111,7 @@ public static class TemplatePolicy
         if (installed is null)
         {
             throw new JexException(
-                $"The Jex templates are not installed. Run 'dotnet new install {PackageId}{(want is { IsDev: false } ? $"::{want}" : string.Empty)}' "
+                $"The Jex templates are not installed. Run 'dotnet new install {PackageId}{(want is { IsDev: false } ? $"@{want}" : string.Empty)}' "
                 + "(or 'jex dev install' in the template repository).");
         }
 
@@ -142,7 +142,7 @@ public static class TemplatePolicy
                 $"This project was created with templates {project?.ToString() ?? "(unknown version)"}"
                 + (isExplicit ? $" and --template-version asks for {want}" : string.Empty)
                 + $", but {installed.Display} is installed (different major version). Either switch this machine's templates: "
-                + $"'dotnet new install {PackageId}::{want} --force', or rerun with --force to scaffold with the installed templates anyway.");
+                + $"'dotnet new install {PackageId}@{want} --force', or rerun with --force to scaffold with the installed templates anyway.");
         }
 
         return installedVersion == want

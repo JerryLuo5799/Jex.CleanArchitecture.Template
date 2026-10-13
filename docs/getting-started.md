@@ -21,7 +21,7 @@ jex new Acme.Shop
 cd Acme.Shop
 ```
 
-`jex new` 会先确保本机装有与 jex 同版本的模板包（`dotnet new install Jex.CleanArchitecture.Template::<版本>`），再运行 `dotnet new jex -n Acme.Shop`。不用 jex 时：
+`jex new` 会先确保本机装有与 jex 同版本的模板包（`dotnet new install Jex.CleanArchitecture.Template@<版本>`），再运行 `dotnet new jex -n Acme.Shop`。不用 jex 时：
 
 ```bash
 dotnet new install Jex.CleanArchitecture.Template
@@ -64,4 +64,4 @@ Development 环境会自动建表并种子化 `admin@example.com / Admin123!`。
 dotnet tool update -g Jex.Cli
 ```
 
-之后的 `jex new` 会自动切换到同版本的模板包。已有项目里的 `jex scaffold` 不会安装或升级模板：它核对 `jex.json` 的模板版本与本机已安装的模板，主版本不同时拒绝执行，并提示 `dotnet new install Jex.CleanArchitecture.Template::<版本> --force`（切换本机模板）或 `--force`（用已安装的模板继续）。
+之后的 `jex new` 会自动切换到同版本的模板包。已有项目里的 `jex scaffold` 不会安装或升级模板：它核对 `jex.json` 的模板版本与本机已安装的模板，主版本不同时拒绝执行，并提示 `dotnet new install Jex.CleanArchitecture.Template@<版本> --force`（切换本机模板）或 `--force`（用已安装的模板继续）。
