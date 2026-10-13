@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [3.0.0-rc.1]
+
 **破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`。
 
 ### 新增
