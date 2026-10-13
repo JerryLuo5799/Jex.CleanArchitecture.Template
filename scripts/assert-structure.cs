@@ -111,7 +111,7 @@ if (File.Exists(manifestPath))
 }
 
 // ── Install instructions name the real tool package, not <Name>.Cli ──────────
-foreach (var (doc, expected) in new[] { ("README.md", true), ("AGENTS.md", aiDocs) })
+foreach (var (doc, expected) in new[] { ("README.md", true), ("README.zh-CN.md", true), ("AGENTS.md", aiDocs) })
 {
     var path = Path.Combine(root, doc);
     if (expected && File.Exists(path) && !File.ReadAllText(path).Contains("dotnet tool install -g Jex.Cli", StringComparison.Ordinal))
@@ -121,6 +121,21 @@ foreach (var (doc, expected) in new[] { ("README.md", true), ("AGENTS.md", aiDoc
 }
 
 // ── Optional feature files ──────────────────────────────────────────────────
+Exists("README.md", true, "the English README is always generated");
+Exists("README.zh-CN.md", true, "the Chinese README is always generated");
+foreach (var (doc, other) in new[] { ("README.md", "README.zh-CN.md"), ("README.zh-CN.md", "README.md") })
+{
+    var path = Path.Combine(root, doc);
+    if (File.Exists(path) && !File.ReadAllText(path).Contains($"]({other})", StringComparison.Ordinal))
+    {
+        Fail($"{doc} must link to {other} (language switch)");
+    }
+
+    if (!aiDocs && File.Exists(path) && File.ReadAllText(path).Contains("AGENTS.md", StringComparison.Ordinal))
+    {
+        Fail($"{doc} mentions AGENTS.md, which --include-ai-docs false does not generate");
+    }
+}
 Exists($"src/{name}.AppHost", aspire, "--use-aspire");
 Exists($"src/{name}.ServiceDefaults", true, "ServiceDefaults is always generated");
 Exists("AGENTS.md", aiDocs, "--include-ai-docs");

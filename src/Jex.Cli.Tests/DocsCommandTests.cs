@@ -132,7 +132,7 @@ public sealed partial class DocsCommandTests
         var skip = new[] { "bin", "obj", "node_modules" };
         return roots
             .SelectMany(root => Directory.EnumerateFiles(root, "*.md", SearchOption.AllDirectories))
-            .Concat([Path.Combine(s_repo, "README.md"), Path.Combine(s_repo, "CONTRIBUTING.md")])
+            .Concat([Path.Combine(s_repo, "README.md"), Path.Combine(s_repo, "README.zh-CN.md"), Path.Combine(s_repo, "CONTRIBUTING.md")])
             .Where(file => !Relative(file).Split('/').Intersect(skip).Any());
     }
 

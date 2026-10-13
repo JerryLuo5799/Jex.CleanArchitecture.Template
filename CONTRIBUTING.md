@@ -34,7 +34,7 @@ dotnet run --project src/Jex.Cli -- dev install-cli
 
 - **迭代 CLI 源码**：`dotnet run --project src/Jex.Cli -- dev new Acme --check`。`--check` 在同一进程内运行 `check --ci`，验证的就是当前源码，不经过全局安装的 jex。
 - **重装全局 jex**：`dotnet run --project src/Jex.Cli -- dev install-cli`。它打包 `0.0.0-dev`、卸载旧工具、删除 NuGet 缓存里的 `jex.cli/0.0.0-dev`（版本号不变，不删缓存就会装回旧包），再用 `--source artifacts` 安装。不要用已安装的 `jex dev install-cli` 更新自己（Windows 下运行中的工具被锁定，jex 会拒绝）。
-- **矩阵测哪个 jex**：矩阵脚本从不在 PATH 上找 jex，而是由 `jex dev matrix` 把自己的启动方式传给它（`--jex <exe>`，用 `dotnet Jex.Cli.dll` 启动时再加 `--jex-arg <dll>`）。全局 jex 跑 `jex dev matrix` 测的是全局 jex；`dotnet run --project src/Jex.Cli -- dev matrix --cells sqlite,bare` 测的是源码。
+- **矩阵测哪个 jex**：矩阵脚本从不在 PATH 上找 jex，而是由 `jex dev matrix` 把自己的启动方式传给它（`--jex <exe>`，用 `dotnet jex.dll` 启动时再加 `--jex-arg <dll>`）。全局 jex 跑 `jex dev matrix` 测的是全局 jex；`dotnet run --project src/Jex.Cli -- dev matrix --cells sqlite,bare` 测的是源码。
 - **版本**：本地构建的 CLI 是 `0.0.0-dev`（开发模式：`jex new` 只使用 `jex dev install` 安装的开发模板，不联网安装）。
 
 ## 模板编写规则
@@ -57,7 +57,7 @@ dotnet run --project src/Jex.Cli -- dev install-cli
 2. `dotnetcli.host.json` 增加长短参数名（避开 `dotnet new` 自带的 `--type`、`--name`、`--output` 等）。
 3. 在内容里用条件或占位符使用它。
 4. `scripts/assert-structure.cs` 增加对应断言；`scripts/test-template-matrix.cs` 视需要增加矩阵格子，`.github/workflows/template-tests.yml` 同步。
-5. 更新 `docs/template-parameters.md` 与 `README.md` 的参数表。
+5. 更新 `docs/template-parameters.md` 与 `README.md`、`README.zh-CN.md` 的参数表。
 
 ## 发布
 
