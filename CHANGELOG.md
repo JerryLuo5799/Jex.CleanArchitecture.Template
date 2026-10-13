@@ -4,6 +4,19 @@
 
 ## [Unreleased]
 
+## [3.0.1]
+
+### 变更
+
+- README 默认改为英文，中文版移到 `README.zh-CN.md`，两者顶部互相链接切换语言；仓库与生成项目都是如此。
+- `jex` 的程序集改名为 `jex.dll`（包 id 仍为 `Jex.Cli`），帮助里的用法显示为 `jex [command]` 而不是 `Jex.Cli [command]`。
+
+### 修复
+
+- `jex scaffold` 遇到已存在的文件时说明 jex 从不覆盖、应如何处理，不再只留下 `dotnet new` 的 `--force` 提示（`jex scaffold --force` 只跳过模板版本检查，帮助里也写明了）。
+- `jex scaffold endpoint` 的帮助说明只有带 `--entity` 才生成 Create/GetById 端点和集成测试。
+- 生成项目：对开发运行时自动建表（`Database:AutoSyncStructure`）的库执行 `jex db migrate` 失败时，错误信息说明原因和处理办法（SQLite：先 `jex db reset`）；README 与 AGENTS.md 补充了这一点。
+
 ## [3.0.0]
 
 正式版，包含 [3.0.0-rc.1] 的全部改动。**破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`；本机已装旧版模板时，`jex new` 会自动切换到同版本模板。
