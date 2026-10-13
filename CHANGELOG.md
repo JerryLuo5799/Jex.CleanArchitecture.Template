@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+## [3.0.0]
+
+正式版，包含 [3.0.0-rc.1] 的全部改动。**破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`；本机已装旧版模板时，`jex new` 会自动切换到同版本模板。
+
 ### 修复
 
 - 预发布版本（如 `3.0.0-rc.1`）的 GitHub Release 标记为 Pre-release，不再成为仓库的 Latest release。
