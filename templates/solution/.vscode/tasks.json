@@ -20,7 +20,7 @@
     {
       "label": "check",
       "type": "shell",
-      "command": "task check",
+      "command": "jex check",
       "problemMatcher": "$msCompile"
     }
   ]

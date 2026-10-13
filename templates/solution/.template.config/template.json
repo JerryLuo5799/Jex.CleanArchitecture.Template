@@ -160,6 +160,15 @@
       "replaces": "TPLPREFIX",
       "description": "Short-name prefix of the item templates (jex-usecase etc.). Kept out of sourceName rewriting."
     },
+    "ToolPackageId": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "Jex.Cli"
+      },
+      "replaces": "TPLTOOL",
+      "description": "NuGet id of the jex CLI used in install instructions. A placeholder because NameSafe would turn a literal Jex.Cli into <Name>.Cli."
+    },
 
     "HttpPortGenerated": {
       "type": "generated",

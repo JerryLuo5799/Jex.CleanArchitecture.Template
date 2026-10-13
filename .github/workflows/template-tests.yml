@@ -1,5 +1,5 @@
-# Reusable: install the nupkg produced by ci.yml in the same run, generate every supported template
-# combination, scaffold a feature with the item templates and run the strict gate in each project.
+# Reusable: install the template package and the jex CLI produced by ci.yml in the same run, generate every
+# supported template combination, scaffold a feature with that jex and run the strict gate in each project.
 name: template-tests
 
 on:
@@ -7,6 +7,10 @@ on:
     inputs:
       artifact-name:
         description: nupkg artifact uploaded by ci.yml in this run.
+        required: true
+        type: string
+      version:
+        description: Version of both packages in the artifact.
         required: true
         type: string
 
@@ -47,13 +51,36 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: nupkg
 
+      # --source replaces every NuGet source (--add-source would only add one, and nuget.org could win the race
+      # for a version that is already published), and the isolated package folder rules out a stale cache.
+      - name: Install the jex CLI from this run's artifact
+        shell: bash
+        env:
+          NUGET_PACKAGES: ${{ runner.temp }}/nuget-isolated
+        run: |
+          dotnet tool install --global Jex.Cli --version "${{ inputs.version }}" --source "$PWD/nupkg"
+          tools="$HOME/.dotnet/tools"
+          if [ "$RUNNER_OS" = "Windows" ]; then tools="$USERPROFILE\\.dotnet\\tools"; fi
+          echo "$tools" >> "$GITHUB_PATH"
+
+      - name: The installed jex is this build
+        shell: bash
+        run: |
+          actual="$(jex --version)"
+          if [ "$actual" != "${{ inputs.version }}" ]; then
+            echo "::error::jex --version printed '$actual', expected ${{ inputs.version }}."
+            exit 1
+          fi
+
       - name: Generate, scaffold and verify
         shell: bash
         run: |
-          package=$(ls nupkg/*.nupkg | head -n 1)
           extra=""
           if [ "${{ matrix.docker }}" = "true" ]; then extra="--docker"; fi
-          dotnet run --file scripts/test-template-matrix.cs -- --package "$package" --cells ${{ matrix.cell }} $extra
+          cli="$HOME/.dotnet/tools/jex"
+          if [ "$RUNNER_OS" = "Windows" ]; then cli="$USERPROFILE\\.dotnet\\tools\\jex.exe"; fi
+          jex dev matrix --package "nupkg/Jex.CleanArchitecture.Template.${{ inputs.version }}.nupkg" \
+            --cells ${{ matrix.cell }} $extra --jex "$cli"
 
       - name: Upload generated project on failure
         if: failure()

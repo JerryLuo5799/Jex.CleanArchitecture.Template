@@ -1,4 +1,4 @@
-// .NET Aspire orchestration for local development: `task run:aspire` (dashboard URL is printed on start).
+// .NET Aspire orchestration for local development: `jex run --aspire` (dashboard URL is printed on start).
 // The database resource is named "DefaultConnection" so Aspire injects ConnectionStrings__DefaultConnection
 // into the API; no code in Infrastructure has to know about Aspire.
 var builder = DistributedApplication.CreateBuilder(args);

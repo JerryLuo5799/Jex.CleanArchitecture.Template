@@ -20,7 +20,7 @@
       "isRequired": true,
       "replaces": "JexSolution",
       "fileRename": "JexSolution",
-      "description": "Solution / root namespace, e.g. Acme.Shop (the Taskfile fills this in)."
+      "description": "Solution / root namespace, e.g. Acme.Shop (jex scaffold fills this in)."
     },
     "EntityName": {
       "type": "parameter",

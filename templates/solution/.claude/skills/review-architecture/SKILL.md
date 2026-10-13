@@ -5,7 +5,7 @@ description: 审查当前改动是否符合 AGENTS.md 的架构与命名规则�
 
 # 架构审查
 
-1. 运行 `task test:arch`，把每条失败原样列出（失败信息就是修复指引）。
+1. 运行 `jex test arch`（原生：`dotnet test --project tests/Jex.ArchitectureTests/Jex.ArchitectureTests.csproj`），把每条失败原样列出（失败信息就是修复指引）。
 2. `git diff --name-only` 列出改动文件，逐个对照 `AGENTS.md` §6 的 Must-Not：
    - Handler/端点是否注入了 `IFreeSql`、`IUnitOfWork`；是否在 Handler 里提交事务
    - 是否出现 `DateTime.Now/UtcNow`、AutoMapper、Controller、`AddValidation()`

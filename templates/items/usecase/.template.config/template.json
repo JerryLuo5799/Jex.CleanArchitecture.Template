@@ -20,7 +20,7 @@
       "isRequired": true,
       "replaces": "JexSolution",
       "fileRename": "JexSolution",
-      "description": "Solution / root namespace, e.g. Acme.Shop (the Taskfile fills this in)."
+      "description": "Solution / root namespace, e.g. Acme.Shop (jex scaffold fills this in)."
     },
     "FeatureName": {
       "type": "parameter",
@@ -109,7 +109,7 @@
     {
       "description": "Next steps",
       "manualInstructions": [
-        { "text": "Fill in the request fields, handler logic and validator rules, then run 'task check'. See AGENTS.md section 4." }
+        { "text": "Fill in the request fields, handler logic and validator rules, then run 'jex check'. See AGENTS.md section 4." }
       ],
       "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
       "continueOnError": true

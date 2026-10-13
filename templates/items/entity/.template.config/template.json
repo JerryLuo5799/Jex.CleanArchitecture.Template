@@ -20,7 +20,7 @@
       "isRequired": true,
       "replaces": "JexSolution",
       "fileRename": "JexSolution",
-      "description": "Solution / root namespace, e.g. Acme.Shop (the Taskfile fills this in)."
+      "description": "Solution / root namespace, e.g. Acme.Shop (jex scaffold fills this in)."
     },
     "PluralName": {
       "type": "parameter",
@@ -75,7 +75,7 @@
     {
       "description": "Next steps",
       "manualInstructions": [
-        { "text": "Add properties to the entity, configure lengths/indexes in its Configuration, then run 'task db:script NAME=add-<plural>'." }
+        { "text": "Add properties to the entity, configure lengths/indexes in its Configuration, then run 'jex db script add-<plural>'." }
       ],
       "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
       "continueOnError": true

@@ -1,14 +1,16 @@
 // Structure assertions for a project generated from the Jex template.
-// Usage: dotnet run scripts/assert-structure.cs -- <outputDir> <name> <database> <aspire> <aiDocs> <docker>
+// Usage: dotnet run scripts/assert-structure.cs -- <outputDir> <name> <database> <aspire> <aiDocs> <docker> [--template-version <v>]
 //   database: sqlite | postgresql | sqlserver | mysql
 //   aspire / aiDocs / docker: true | false
+//   --template-version: expected jex.json templateVersion (the package version when testing a nupkg)
 // Exit code 0 when every assertion passes; 1 otherwise (each failure is printed).
 
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 if (args.Length < 6)
 {
-    Console.Error.WriteLine("usage: assert-structure.cs <outputDir> <name> <database> <aspire> <aiDocs> <docker>");
+    Console.Error.WriteLine("usage: assert-structure.cs <outputDir> <name> <database> <aspire> <aiDocs> <docker> [--template-version <v>]");
     return 2;
 }
 
@@ -19,6 +21,19 @@ var database = args[2].ToLowerInvariant();
 var aspire = bool.Parse(args[3]);
 var aiDocs = bool.Parse(args[4]);
 var docker = bool.Parse(args[5]);
+string? expectedTemplateVersion = null;
+for (var i = 6; i < args.Length; i++)
+{
+    if (args[i] == "--template-version" && i + 1 < args.Length)
+    {
+        expectedTemplateVersion = args[++i];
+    }
+    else
+    {
+        Console.Error.WriteLine($"unknown argument '{args[i]}'");
+        return 2;
+    }
+}
 
 var failures = new List<string>();
 void Fail(string message) => failures.Add(message);
@@ -61,12 +76,49 @@ foreach (var required in new[]
     $"tests/{name}.IntegrationTests/{name}.IntegrationTests.csproj",
     $"tests/{name}.ArchitectureTests/{name}.ArchitectureTests.csproj",
     "tests/Directory.Build.props",
+    "jex.json",
 })
 {
     Exists(required, true, "core solution file");
 }
 
 Exists(".template.config", false, "template metadata must not be emitted");
+Exists("Taskfile.yml", false, "the jex CLI replaced go-task");
+
+// ── jex.json: marks the project for the jex CLI and records the template version ──
+var manifestPath = Path.Combine(root, "jex.json");
+if (File.Exists(manifestPath))
+{
+    try
+    {
+        using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var schema = manifest.RootElement.TryGetProperty("schemaVersion", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetInt32() : 0;
+        var template = manifest.RootElement.TryGetProperty("template", out var t) ? t.GetString() : null;
+        var templateVersion = manifest.RootElement.TryGetProperty("templateVersion", out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+        if (schema != 1 || template != "jex" || string.IsNullOrEmpty(templateVersion))
+        {
+            Fail($"jex.json must have schemaVersion 1, template \"jex\" and a templateVersion: {File.ReadAllText(manifestPath).Trim()}");
+        }
+        else if (expectedTemplateVersion is not null && templateVersion != expectedTemplateVersion)
+        {
+            Fail($"jex.json templateVersion is {templateVersion}, expected the package version {expectedTemplateVersion}");
+        }
+    }
+    catch (JsonException ex)
+    {
+        Fail($"jex.json is not valid JSON: {ex.Message}");
+    }
+}
+
+// ── Install instructions name the real tool package, not <Name>.Cli ──────────
+foreach (var (doc, expected) in new[] { ("README.md", true), ("AGENTS.md", aiDocs) })
+{
+    var path = Path.Combine(root, doc);
+    if (expected && File.Exists(path) && !File.ReadAllText(path).Contains("dotnet tool install -g Jex.Cli", StringComparison.Ordinal))
+    {
+        Fail($"{doc} must tell readers to 'dotnet tool install -g Jex.Cli'");
+    }
+}
 
 // ── Optional feature files ──────────────────────────────────────────────────
 Exists($"src/{name}.AppHost", aspire, "--use-aspire");
@@ -85,8 +137,9 @@ var textExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     ".cs", ".csproj", ".props", ".targets", ".slnx", ".json", ".yml", ".yaml", ".md", ".http", ".txt",
     ".editorconfig", ".gitignore", ".dockerignore", ".config", ".xml", ".sql", ".env", ".example",
 };
-var allowedLowerTokens = new[] { "jex-usecase", "jex-endpoint", "jex-entity" };
+var allowedLowerTokens = new[] { "jex", "jex.json", "jex-usecase", "jex-endpoint", "jex-entity", "jex-*" };
 var skipDirs = new[] { "bin", "obj", ".git", ".vs", "logs", "TestResults", "artifacts", "node_modules" };
+var renamedCli = new Regex($@"\b{Regex.Escape(name)}\.Cli\b");
 
 foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
 {
@@ -103,7 +156,7 @@ foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirecto
     }
 
     var ext = Path.GetExtension(file);
-    if (!textExtensions.Contains(ext) && !textExtensions.Contains(fileName) && fileName != "Dockerfile" && fileName != "Taskfile.yml")
+    if (!textExtensions.Contains(ext) && !textExtensions.Contains(fileName) && fileName != "Dockerfile")
     {
         continue;
     }
@@ -112,20 +165,21 @@ foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirecto
 
     foreach (Match m in Regex.Matches(content, @"\bJex\b|Jex\.|\.Jex"))
     {
+        // The jex CLI's NuGet id is the one legitimate capitalised "Jex" (restored from the TPLTOOL placeholder).
+        if (Regex.IsMatch(content[m.Index..], @"^Jex\.Cli\b"))
+        {
+            continue;
+        }
+
         Fail($"'Jex' leftover in {relative} at index {m.Index}: ...{Snippet(content, m.Index)}...");
         break;
     }
 
     foreach (Match m in Regex.Matches(content, @"\bjex(?:[-_.][a-z*]+)?"))
     {
-        // Item template names (jex-usecase etc.), the "jex-*" permission glob and the Taskfile
-        // prefix variable ("TPL: jex") legitimately keep the lowercase template prefix.
-        var lineEnd = content.IndexOf('\n', m.Index);
-        var line = content[(content.LastIndexOf('\n', m.Index) + 1)..(lineEnd < 0 ? content.Length : lineEnd)];
-        var allowed = allowedLowerTokens.Contains(m.Value)
-            || m.Value == "jex-*"
-            || (m.Value == "jex" && line.Contains("TPL: jex", StringComparison.Ordinal));
-        if (allowed)
+        // The jex CLI (jex check, jex.json), item template names (jex-usecase etc.) and the "jex-*"
+        // permission glob legitimately keep the lowercase template prefix.
+        if (allowedLowerTokens.Contains(m.Value))
         {
             continue;
         }
@@ -134,7 +188,12 @@ foreach (var file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirecto
         break;
     }
 
-    foreach (var token in new[] { "TPLPREFIX", "TPLNAMELOWER", "DB_PROFILE", "FREESQL_PROVIDER", "TPLCONN_PREFIX", "TPLCONN_SUFFIX", "TemplateSourceOnly" })
+    if (renamedCli.Match(content) is { Success: true } renamed)
+    {
+        Fail($"'{renamed.Value}' in {relative}: the tool package is Jex.Cli whatever the project is called (use TPLTOOL in the template)");
+    }
+
+    foreach (var token in new[] { "TPLPREFIX", "TPLTOOL", "TPLNAMELOWER", "DB_PROFILE", "FREESQL_PROVIDER", "TPLCONN_PREFIX", "TPLCONN_SUFFIX", "TemplateSourceOnly" })
     {
         if (content.Contains(token, StringComparison.Ordinal))
         {

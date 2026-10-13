@@ -7,7 +7,8 @@
   -->
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>2.0.0</PackageVersion>
+    <!-- Version (not PackageVersion) so one -p:Version=X stamps this package and Jex.Cli alike. -->
+    <Version>2.0.0</Version>
     <PackageId>Jex.CleanArchitecture.Template</PackageId>
     <Title>Jex Clean Architecture</Title>
     <Authors>JerryLuo</Authors>
@@ -35,9 +36,31 @@
 
   <ItemGroup>
     <Content Include="templates\**"
-             Exclude="templates\**\bin\**;templates\**\obj\**;templates\**\.vs\**;templates\**\*.user;templates\**\logs\**;templates\**\*.db;templates\**\*.db-*;templates\**\TestResults\**;templates\**\artifacts\**" />
+             Exclude="templates\**\bin\**;templates\**\obj\**;templates\**\.vs\**;templates\**\*.user;templates\**\logs\**;templates\**\*.db;templates\**\*.db-*;templates\**\TestResults\**;templates\**\artifacts\**;templates\solution\jex.json" />
     <None Include="README.md" Pack="true" PackagePath="\" />
     <None Include="docs\icon.png" Pack="true" PackagePath="\" Condition="Exists('docs\icon.png')" />
   </ItemGroup>
+
+  <!--
+    jex.json records the template version a project was generated with. The source file says 0.0.0-dev (what a
+    directory install of ./templates produces); the packed copy is stamped with the package version at pack time,
+    next to .template.config in the template root, without touching the source tree.
+  -->
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);StampJexManifest</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <Target Name="StampJexManifest">
+    <PropertyGroup>
+      <_JexManifestSource>$(MSBuildThisFileDirectory)templates\solution\jex.json</_JexManifestSource>
+      <_JexManifestStamped>$(IntermediateOutputPath)jex.json</_JexManifestStamped>
+      <_JexManifestText>$([System.IO.File]::ReadAllText('$(_JexManifestSource)').Trim().Replace('"0.0.0-dev"', '"$(PackageVersion)"'))</_JexManifestText>
+    </PropertyGroup>
+    <Error Condition="!$(_JexManifestText.Contains('&quot;$(PackageVersion)&quot;'))" Text="Could not stamp $(PackageVersion) into $(_JexManifestSource)." />
+    <WriteLinesToFile File="$(_JexManifestStamped)" Lines="$(_JexManifestText)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(_JexManifestStamped)" PackagePath="content/templates/solution/jex.json" />
+    </ItemGroup>
+  </Target>
 
 </Project>

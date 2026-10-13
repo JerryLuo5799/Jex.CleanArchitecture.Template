@@ -1,1 +1,1 @@
-本仓库的全部开发规范在根目录 [AGENTS.md](../AGENTS.md)：架构与依赖规则、目录→产物映射、新增功能流程、命名公式、Must/Must-Not、响应契约、测试约定、命令速查。请先阅读它，再按其中的示例文件（TodoItems 功能切片）编写代码。验收命令：`task check`。
+本仓库的全部开发规范在根目录 [AGENTS.md](../AGENTS.md)：架构与依赖规则、目录→产物映射、新增功能流程、命名公式、Must/Must-Not、响应契约、测试约定、命令速查。请先阅读它，再按其中的示例文件（TodoItems 功能切片）编写代码。验收命令：`jex check`（安装：`dotnet tool install -g TPLTOOL`；原生等价命令见 AGENTS.md §10）。
