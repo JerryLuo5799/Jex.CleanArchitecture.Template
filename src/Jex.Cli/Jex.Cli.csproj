@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <AssemblyName>Jex.Cli</AssemblyName>
+    <!-- System.CommandLine names the root command after the entry assembly, so help shows "Usage: jex ...". -->
+    <AssemblyName>jex</AssemblyName>
     <RootNamespace>Jex.Cli</RootNamespace>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>jex</ToolCommandName>

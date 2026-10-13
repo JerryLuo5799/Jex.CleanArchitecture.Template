@@ -137,7 +137,7 @@ internal static class DevCommands
         var jex = new Option<string?>("--jex") { Description = "Executable of the jex CLI under test. Default: this jex." };
         var jexArguments = new Option<string[]>("--jex-arg")
         {
-            Description = "Argument placed before every jex command (repeatable), e.g. the Jex.Cli.dll path when --jex is dotnet.",
+            Description = "Argument placed before every jex command (repeatable), e.g. the jex.dll path when --jex is dotnet.",
         };
 
         return new Command("matrix", "Generate, assert, scaffold (with jex) and check every supported template combination.")

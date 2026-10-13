@@ -138,7 +138,7 @@ internal sealed class CliHarness(string currentDirectory)
 
     public SemVer Version { get; init; } = SemVer.Dev;
 
-    public CliLaunch Self { get; init; } = new("dotnet", ["/tools/Jex.Cli.dll"]);
+    public CliLaunch Self { get; init; } = new("dotnet", ["/tools/jex.dll"]);
 
     public string BaseDirectory { get; init; } = AppContext.BaseDirectory;
 

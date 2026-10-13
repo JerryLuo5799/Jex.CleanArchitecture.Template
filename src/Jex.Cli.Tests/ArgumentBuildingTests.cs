@@ -219,6 +219,29 @@ public sealed class ArgumentBuildingTests : IDisposable
     }
 
     [Fact]
+    public void Scaffold_explains_existing_files_instead_of_pointing_at_dotnet_new_force()
+    {
+        _cli.Runner.ThenExit(73);
+
+        _cli.Run("scaffold", "entity", "Order", "Orders").ShouldBe(73);
+
+        var error = _cli.Error.ToString();
+        error.ShouldContain("already exist");
+        error.ShouldContain("never overwrites");
+        error.ShouldContain("'jex scaffold --force' only skips the template version check");
+    }
+
+    [Fact]
+    public void Scaffold_reports_other_template_failures_with_their_exit_code()
+    {
+        _cli.Runner.ThenExit(5);
+
+        _cli.Run("scaffold", "endpoint", "Reports").ShouldBe(5);
+
+        _cli.Error.ToString().ShouldContain("'dotnet new' exited with code 5.");
+    }
+
+    [Fact]
     public void Scaffold_checks_the_template_version_before_generating()
     {
         TestProject.Create(_dir, "Acme", TestProject.StandardProjects("Acme"), templateVersion: "1.0.0");

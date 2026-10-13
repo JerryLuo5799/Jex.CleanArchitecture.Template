@@ -2,11 +2,11 @@
 // the jex CLI under test, then run the strict gate (jex check --ci: format check, warnings-as-errors build, tests).
 //
 // The CLI under test is always explicit (never looked up on PATH): --jex is the executable and every --jex-arg is
-// placed before the jex command, so both an installed tool and "dotnet path/to/Jex.Cli.dll" can be tested.
+// placed before the jex command, so both an installed tool and "dotnet path/to/jex.dll" can be tested.
 // `jex dev matrix` fills these in for the jex that runs it.
 //
 //   dotnet run --file scripts/test-template-matrix.cs -- --jex jex                                   # all cells, ./templates
-//   dotnet run --file scripts/test-template-matrix.cs -- --jex dotnet --jex-arg src/Jex.Cli/bin/Debug/net10.0/Jex.Cli.dll --cells sqlite,bare
+//   dotnet run --file scripts/test-template-matrix.cs -- --jex dotnet --jex-arg src/Jex.Cli/bin/Debug/net10.0/jex.dll --cells sqlite,bare
 //   dotnet run --file scripts/test-template-matrix.cs -- --jex jex --package artifacts/Jex.CleanArchitecture.Template.1.2.3.nupkg
 //   dotnet run --file scripts/test-template-matrix.cs -- --jex jex --docker   # also `docker build` the cells marked docker
 //

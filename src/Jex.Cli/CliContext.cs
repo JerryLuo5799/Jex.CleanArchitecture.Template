@@ -21,7 +21,7 @@ public sealed class CliContext
     /// <summary>How to start this CLI again as a child process (the template matrix needs it).</summary>
     public required CliLaunch Self { get; init; }
 
-    /// <summary>Directory of the running Jex.Cli.dll; under ~/.dotnet/tools/.store when installed as a global tool.</summary>
+    /// <summary>Directory of the running jex.dll; under ~/.dotnet/tools/.store when installed as a global tool.</summary>
     public string BaseDirectory { get; init; } = AppContext.BaseDirectory;
 
     public string NuGetPackagesDirectory { get; init; } = DefaultNuGetPackagesDirectory();

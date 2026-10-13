@@ -10,7 +10,7 @@ public static class CliLauncher
 
     /// <summary>
     /// <c>Environment.ProcessPath</c> is the apphost (or the global-tool shim) when jex was started directly, but
-    /// only the dotnet host when it was started as <c>dotnet Jex.Cli.dll</c>; the DLL then has to be passed again.
+    /// only the dotnet host when it was started as <c>dotnet jex.dll</c>; the DLL then has to be passed again.
     /// </summary>
     public static CliLaunch Resolve(string? processPath, string assemblyLocation)
     {

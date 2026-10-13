@@ -1,6 +1,7 @@
 using System.Reflection;
 using DbUp;
 using DbUp.Builder;
+using DbUp.Engine;
 using DbUp.Engine.Output;
 
 namespace Jex.Infrastructure.Persistence.Migrations;
@@ -29,16 +30,7 @@ public sealed class DbUpMigrator(DatabaseOptions database, string connectionStri
         }
 
         logger.LogInformation("Applying {Count} migration(s): {Scripts}", pending.Count, string.Join(", ", pending));
-
-        var result = engine.PerformUpgrade();
-        if (!result.Successful)
-        {
-            throw new InvalidOperationException(
-                $"Migration '{result.ErrorScript?.Name}' failed: {result.Error?.Message}. Later scripts were not applied.",
-                result.Error);
-        }
-
-        return new MigrationResult(result.Scripts.Select(s => s.Name).ToList());
+        return Upgrade(engine);
     }
 
     /// <summary>Names of embedded scripts that have not been applied to the configured database yet.</summary>
@@ -53,19 +45,36 @@ public sealed class DbUpMigrator(DatabaseOptions database, string connectionStri
             return new MigrationResult([]);
         }
 
-        var result = Build(targetConnectionString, b => b.WithScriptsFromFileSystem(scriptsDirectory, IsMigrationScript)).Build().PerformUpgrade();
-        if (!result.Successful)
-        {
-            throw new InvalidOperationException($"Migration '{result.ErrorScript?.Name}' failed: {result.Error?.Message}", result.Error);
-        }
-
-        return new MigrationResult(result.Scripts.Select(s => s.Name).ToList());
+        return Upgrade(Build(targetConnectionString, b => b.WithScriptsFromFileSystem(scriptsDirectory, IsMigrationScript)).Build());
     }
 
     /// <summary>Names of scripts in <paramref name="scriptsDirectory"/> not yet applied to <paramref name="targetConnectionString"/>.</summary>
     public IReadOnlyList<string> GetPendingFromDirectory(string scriptsDirectory, string targetConnectionString)
         => Build(targetConnectionString, b => b.WithScriptsFromFileSystem(scriptsDirectory, IsMigrationScript))
             .Build().GetScriptsToExecute().Select(s => s.Name).ToList();
+
+    /// <summary>
+    /// A first migration usually fails because the database was created by <c>Database:AutoSyncStructure</c> (the
+    /// development run): its tables exist but the SchemaVersions journal does not, so the scripts collide with them.
+    /// </summary>
+    internal const string NeverMigratedHint =
+        " This database has no migration history: if the app created its tables with Database:AutoSyncStructure " +
+        "(the development default), migrations cannot be applied to it. Use a database that only migrations manage; " +
+        "for the local SQLite file run 'jex db reset' and then 'jex db migrate'.";
+
+    private static MigrationResult Upgrade(UpgradeEngine engine)
+    {
+        var neverMigrated = engine.GetExecutedScripts().Count == 0;
+        var result = engine.PerformUpgrade();
+        if (!result.Successful)
+        {
+            throw new InvalidOperationException(
+                $"Migration '{result.ErrorScript?.Name}' failed: {result.Error?.Message}. Later scripts were not applied.{(neverMigrated ? NeverMigratedHint : string.Empty)}",
+                result.Error);
+        }
+
+        return new MigrationResult(result.Scripts.Select(s => s.Name).ToList());
+    }
 
     private UpgradeEngineBuilder EmbeddedScripts(UpgradeEngineBuilder builder)
         => builder.WithScriptsEmbeddedInAssembly(scriptsAssembly, IsMigrationScript);

@@ -117,6 +117,7 @@ Jex.Domain  ←  Jex.Application  ←  Jex.Infrastructure
 - 不要修改 `ErrorCodes` 中已有的值；新增错误码追加在对应区间末尾。
 - 不要在领域事件处理器里调用外部系统（HTTP、邮件）；它们运行在命令事务内，只能做数据库操作（ADR-0005）。
 - 不要在生产环境开启 `Database:AutoSyncStructure`；生产只跑已审阅的迁移脚本（ADR-0008）。
+- 不要对开发运行时自动建表的库执行 `jex db migrate`（表已存在但没有迁移记录，脚本会冲突）；本地验证迁移时先清空开发库（SQLite：`jex db reset`）再 `jex db migrate`。
 - 不要在源文件里 `using` 第三方命名空间（放 `GlobalUsings.cs`），否则 import 排序会随项目名变化。
 
 ## 7. 不需要手动注册的东西

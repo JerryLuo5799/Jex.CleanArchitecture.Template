@@ -49,6 +49,30 @@ internal static class ScaffoldCommands
         return WithTest(arguments, noTest);
     }
 
+    /// <summary>
+    /// Runs one item template. When files already exist, dotnet new lists them and suggests its own --force, which
+    /// would overwrite them; jex never does, and its --force means something else, so say what to do instead.
+    /// </summary>
+    private static void RunTemplate(CliContext context, string root, List<string> arguments)
+    {
+        var exitCode = context.RunAllowingFailure(root, "dotnet", arguments);
+        if (exitCode == DotnetNewFilesExist)
+        {
+            throw new JexException(
+                "The files listed above already exist and jex scaffold never overwrites them (ignore the 'dotnet new --force' hint; " +
+                "'jex scaffold --force' only skips the template version check). Pick another name, or delete or rename those files and rerun.",
+                exitCode);
+        }
+
+        if (exitCode != 0)
+        {
+            throw new JexException($"'dotnet new' exited with code {exitCode}.", exitCode);
+        }
+    }
+
+    /// <summary>dotnet new's exit code when creating the template would change existing files.</summary>
+    internal const int DotnetNewFilesExist = 73;
+
     private static List<string> WithTest(List<string> arguments, bool noTest)
     {
         if (noTest)
@@ -69,7 +93,7 @@ internal static class ScaffoldCommands
         return command.Handle(context, parseResult =>
         {
             var (project, prefix, noTest) = common.Prepare(context, parseResult);
-            context.Run(project.Root, "dotnet", EntityArguments(parseResult.GetValue(entity)!, parseResult.GetValue(plural)!, prefix, noTest));
+            RunTemplate(context, project.Root, EntityArguments(parseResult.GetValue(entity)!, parseResult.GetValue(plural)!, prefix, noTest));
         });
     }
 
@@ -88,7 +112,7 @@ internal static class ScaffoldCommands
         return command.Handle(context, parseResult =>
         {
             var (project, prefix, noTest) = common.Prepare(context, parseResult);
-            context.Run(project.Root, "dotnet", UseCaseArguments(
+            RunTemplate(context, project.Root, UseCaseArguments(
                 parseResult.GetValue(useCase)!,
                 parseResult.GetValue(feature)!,
                 parseResult.GetValue(type)!,
@@ -105,12 +129,12 @@ internal static class ScaffoldCommands
         var feature = new Argument<string>("feature") { Description = "Feature / route group, e.g. Orders." };
         var entity = new Option<string?>("--entity") { Description = "Wire the CRUD use cases of this entity (scaffold them first)." };
         var common = new CommonOptions();
-        var command = new Command("endpoint", "Minimal API endpoint group and integration test.") { feature, entity };
+        var command = new Command("endpoint", "Minimal API endpoint group; with --entity also its Create/GetById endpoints and integration test.") { feature, entity };
         common.AddTo(command);
         return command.Handle(context, parseResult =>
         {
             var (project, prefix, noTest) = common.Prepare(context, parseResult);
-            context.Run(project.Root, "dotnet", EndpointArguments(parseResult.GetValue(feature)!, parseResult.GetValue(entity), prefix, noTest));
+            RunTemplate(context, project.Root, EndpointArguments(parseResult.GetValue(feature)!, parseResult.GetValue(entity), prefix, noTest));
         });
     }
 
@@ -126,10 +150,10 @@ internal static class ScaffoldCommands
             var (project, prefix, noTest) = common.Prepare(context, parseResult);
             var name = parseResult.GetValue(entity)!;
             var feature = parseResult.GetValue(plural)!;
-            context.Run(project.Root, "dotnet", EntityArguments(name, feature, prefix, noTest));
-            context.Run(project.Root, "dotnet", UseCaseArguments($"Create{name}", feature, "command", "long", withId: false, paged: false, prefix, noTest));
-            context.Run(project.Root, "dotnet", UseCaseArguments($"Get{name}ById", feature, "query", $"{name}Dto", withId: true, paged: false, prefix, noTest));
-            context.Run(project.Root, "dotnet", EndpointArguments(feature, name, prefix, noTest));
+            RunTemplate(context, project.Root, EntityArguments(name, feature, prefix, noTest));
+            RunTemplate(context, project.Root, UseCaseArguments($"Create{name}", feature, "command", "long", withId: false, paged: false, prefix, noTest));
+            RunTemplate(context, project.Root, UseCaseArguments($"Get{name}ById", feature, "query", $"{name}Dto", withId: true, paged: false, prefix, noTest));
+            RunTemplate(context, project.Root, EndpointArguments(feature, name, prefix, noTest));
         });
     }
 
@@ -140,7 +164,7 @@ internal static class ScaffoldCommands
             Description = "Template version to require instead of jex.json's templateVersion.",
         };
 
-        private readonly Option<bool> _force = new("--force") { Description = "Skip the template version check." };
+        private readonly Option<bool> _force = new("--force") { Description = "Skip the template version check (existing files are still never overwritten)." };
 
         private readonly Option<string?> _solutionName = new("--solution-name")
         {

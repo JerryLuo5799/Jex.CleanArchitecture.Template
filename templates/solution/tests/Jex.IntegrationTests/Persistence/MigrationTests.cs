@@ -1,3 +1,5 @@
+using Jex.Infrastructure.Persistence;
+using Jex.Infrastructure.Persistence.Configurations;
 using Jex.Infrastructure.Persistence.Migrations;
 
 namespace Jex.IntegrationTests.Persistence;
@@ -39,6 +41,30 @@ public sealed class MigrationTests(CustomWebApplicationFactory factory) : IClass
 
         // 4. The migrated schema matches the entity model (no second script needed).
         generator.Generate("noop", _workDir).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Migrate_DatabaseCreatedByAutoSync_ExplainsWhyItFails()
+    {
+        Assert.SkipUnless(DbUpMigrator.Supports(FreeSql.DataType.Sqlite), "Project provider is not SQLite.");
+
+        using var scope = factory.Services.CreateScope();
+        var generator = scope.ServiceProvider.GetRequiredService<MigrationScriptGenerator>();
+        var migrator = scope.ServiceProvider.GetRequiredService<DbUpMigrator>();
+        generator.Generate("initial", _workDir).ShouldNotBeNull();
+
+        // What a development run leaves behind: tables from AutoSyncStructure, no SchemaVersions journal.
+        var target = $"Data Source={Path.Combine(_workDir, "autosynced.db")}";
+        using (var freeSql = FreeSqlFactory.Create(FreeSql.DataType.Sqlite, target, autoSyncStructure: true))
+        {
+            freeSql.CodeFirst.SyncStructure([.. EntityConfigurations.EntityTypes]);
+        }
+
+        var error = Should.Throw<InvalidOperationException>(() => migrator.ApplyDirectoryTo(_workDir, target));
+
+        error.Message.ShouldContain("0001_initial.sql");
+        error.Message.ShouldContain("no migration history");
+        error.Message.ShouldContain("jex db reset");
     }
 
     [Fact]

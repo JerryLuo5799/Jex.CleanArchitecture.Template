@@ -4,7 +4,7 @@ namespace Jex.Cli.Tests;
 
 public sealed class CliLauncherTests
 {
-    private static readonly string s_dll = Path.Combine(Path.GetTempPath(), "Program Files", "jex cli", "Jex.Cli.dll");
+    private static readonly string s_dll = Path.Combine(Path.GetTempPath(), "Program Files", "jex cli", "jex.dll");
 
     [Theory]
     [InlineData("dotnet.exe")]
