@@ -1,5 +1,5 @@
 # Reusable: strict check of the template source and the jex CLI, then pack both NuGet packages once with the
-# same version. Called by pipeline.yml (PR / push / manual) and release.yml (tags). Never triggered directly, so
+# same version. Called by pipeline.yml (PR / push / manual) and release.yml (manual release). Never triggered directly, so
 # every entry point produces exactly one pair of packages that the template matrix then verifies.
 name: ci
 

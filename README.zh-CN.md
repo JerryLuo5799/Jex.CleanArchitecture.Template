@@ -34,7 +34,7 @@ jex new Acme --include-ai-docs false --include-docker false
 | `--http-port` / `--https-port` | `-hp` / `-hsp` | 随机 | launchSettings 端口 |
 | `--skip-restore` | `-sr` | `false` | 跳过生成后的 restore |
 
-`jex new` 与 `dotnet new jex` 参数相同，另外支持 `--template-version <版本>`（使用指定的模板版本）和 `--no-install`（不安装、不切换模板包，缺少时报错）。完整说明见 [docs/template-parameters.md](docs/template-parameters.md)。
+`jex new` 与 `dotnet new jex` 参数相同，另外支持 `--template-version <版本>`（使用指定的模板版本）和 `--no-install`（不安装、不切换模板包，缺少时报错）。完整说明见 [docs/template-parameters.zh-CN.md](docs/template-parameters.zh-CN.md)。
 
 ## 生成的项目包含什么
 
@@ -74,7 +74,7 @@ jex new Acme --include-ai-docs false --include-docker false
 | `jex-usecase` | Command（+Handler+Validator）或 Query（+Handler）+ 单测 | `dotnet new jex-usecase -n CreateOrder --feature Orders --usecase-type command --return-type long --solution-name Acme -o .` |
 | `jex-endpoint` | `IEndpointGroup`（可选 `--entity` 映射 Create/GetById + 集成测试） | `dotnet new jex-endpoint -n Orders --entity Order --solution-name Acme -o .` |
 
-详见 [docs/scaffolding.md](docs/scaffolding.md)。
+详见 [docs/scaffolding.zh-CN.md](docs/scaffolding.zh-CN.md)。
 
 ## 开发本模板
 
@@ -87,17 +87,17 @@ jex dev matrix           # 6 种组合：生成 → 结构断言 → jex 脚手�
 jex dev install --from-package   # 打包后从 nupkg 安装（发布验收路径）
 ```
 
-仓库结构、占位符规则、jex 的开发循环与发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+仓库结构、占位符规则、jex 的开发循环与发布流程见 [CONTRIBUTING.zh-CN.md](CONTRIBUTING.zh-CN.md)。
 
 ## 文档
 
-- [快速上手](docs/getting-started.md)
-- [模板参数](docs/template-parameters.md)
-- [脚手架](docs/scaffolding.md)
-- [与 AI 助手协作](docs/ai-agents.md)
-- [路线图与不做的事](docs/roadmap.md)
+- [快速上手](docs/getting-started.zh-CN.md)
+- [模板参数](docs/template-parameters.zh-CN.md)
+- [脚手架](docs/scaffolding.zh-CN.md)
+- [与 AI 助手协作](docs/ai-agents.zh-CN.md)
+- [路线图与不做的事](docs/roadmap.zh-CN.md)
 - [模板仓库的架构决策](docs/decisions/)
-- [变更记录](CHANGELOG.md)
+- [变更记录](CHANGELOG.zh-CN.md)
 
 ## 许可证
 

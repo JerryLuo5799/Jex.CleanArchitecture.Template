@@ -1,78 +1,85 @@
 # Changelog
 
-格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [SemVer](https://semver.org/lang/zh-CN/)。
+**English** | [简体中文](CHANGELOG.zh-CN.md)
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [SemVer](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- This repository's docs (CONTRIBUTING, CHANGELOG, `docs/`, ADRs) are bilingual: English `xxx.md` plus Chinese `xxx.zh-CN.md`, linked to each other at the top; issue and PR templates contain both languages.
+- Releases are started by hand (Actions → release → Run workflow with the version) instead of by pushing a `v*` tag; the workflow creates the tag on the commit it built.
+
 ## [3.0.1]
 
-### 变更
+### Changed
 
-- README 默认改为英文，中文版移到 `README.zh-CN.md`，两者顶部互相链接切换语言；仓库与生成项目都是如此。
-- `jex` 的程序集改名为 `jex.dll`（包 id 仍为 `Jex.Cli`），帮助里的用法显示为 `jex [command]` 而不是 `Jex.Cli [command]`。
+- The READMEs default to English, with the Chinese version moved to `README.zh-CN.md`; each links to the other at the top. This applies to both the repository and generated projects.
+- The `jex` assembly is renamed to `jex.dll` (the package id is still `Jex.Cli`), so help shows usage as `jex [command]` instead of `Jex.Cli [command]`.
 
-### 修复
+### Fixed
 
-- `jex scaffold` 遇到已存在的文件时说明 jex 从不覆盖、应如何处理，不再只留下 `dotnet new` 的 `--force` 提示（`jex scaffold --force` 只跳过模板版本检查，帮助里也写明了）。
-- `jex scaffold endpoint` 的帮助说明只有带 `--entity` 才生成 Create/GetById 端点和集成测试。
-- 生成项目：对开发运行时自动建表（`Database:AutoSyncStructure`）的库执行 `jex db migrate` 失败时，错误信息说明原因和处理办法（SQLite：先 `jex db reset`）；README 与 AGENTS.md 补充了这一点。
+- When `jex scaffold` hits an existing file it explains that jex never overwrites and what to do, instead of leaving only the `--force` hint from `dotnet new` (`jex scaffold --force` only skips the template version check, which the help now says too).
+- The help for `jex scaffold endpoint` says that the Create/GetById endpoints and integration test are only generated with `--entity`.
+- Generated project: when `jex db migrate` fails on a database whose tables are created automatically at development run time (`Database:AutoSyncStructure`), the error explains why and how to fix it (SQLite: run `jex db reset` first); README and AGENTS.md cover this too.
 
 ## [3.0.0]
 
-正式版，包含 [3.0.0-rc.1] 的全部改动。**破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`；本机已装旧版模板时，`jex new` 会自动切换到同版本模板。
+Stable release containing all changes from [3.0.0-rc.1]. **Breaking change**: go-task is no longer used; install jex first: `dotnet tool install -g Jex.Cli`. If an older template version is installed on the machine, `jex new` switches to the matching template version automatically.
 
-### 修复
+### Fixed
 
-- 预发布版本（如 `3.0.0-rc.1`）的 GitHub Release 标记为 Pre-release，不再成为仓库的 Latest release。
-- `jex new` 安装模板包与各处提示改用 `Jex.CleanArchitecture.Template@<版本>`（`::` 分隔符已被 .NET SDK 弃用）。
+- GitHub Releases for pre-release versions (such as `3.0.0-rc.1`) are marked as Pre-release and no longer become the repository's Latest release.
+- `jex new` installs the template package, and all hints refer to it, as `Jex.CleanArchitecture.Template@<version>` (the `::` separator is deprecated by the .NET SDK).
 
 ## [3.0.0-rc.1]
 
-**破坏性变更**：不再使用 go-task，先安装 jex：`dotnet tool install -g Jex.Cli`。
+**Breaking change**: go-task is no longer used; install jex first: `dotnet tool install -g Jex.Cli`.
 
-### 新增
+### Added
 
-- `Jex.Cli` 全局工具（命令 `jex`），与模板包同版本发布：`jex new`（自动安装/切换同版本模板包）、`jex check [--ci]`、`jex build` / `test` / `format` / `run` / `watch`、`jex scaffold entity|usecase|endpoint|feature`、`jex db script|migrate|reset`、`jex infra up|down`、`jex init`；仓库开发命令 `jex dev install|uninstall|pack|new|matrix|install-cli|check|clean`。
-- 生成项目根目录的 `jex.json`：jex 的项目标记，记录生成时的模板版本（打包时写入包版本）；脚手架据此拒绝跨主版本的模板。
+- The `Jex.Cli` global tool (command `jex`), released with the same version as the template package: `jex new` (installs or switches to the template package of the same version), `jex check [--ci]`, `jex build` / `test` / `format` / `run` / `watch`, `jex scaffold entity|usecase|endpoint|feature`, `jex db script|migrate|reset`, `jex infra up|down`, `jex init`; repository dev commands `jex dev install|uninstall|pack|new|matrix|install-cli|check|clean`.
+- `jex.json` at the root of a generated project: the project marker for jex, recording the template version it was generated with (the package version is written in at pack time); scaffolding uses it to refuse templates from a different major version.
 
-### 变更
+### Changed
 
-- 生成项目的 `AGENTS.md`、README、`CLAUDE.md`、skills、Copilot 指令、`.claude/settings.json` 权限、`.vscode/tasks.json`、item template 提示改用 `jex` 命令。
-- 矩阵测试用被测的 jex 脚手架并运行 `jex check --ci`；CI 从本次构建的 nupkg 安装 jex，并校验 `jex --version`。
-- 打包项目的版本属性改为 `Version`，`dotnet pack Jex.CleanArchitecture.slnx -p:Version=x` 同时产出两个包。
+- The generated project's `AGENTS.md`, README, `CLAUDE.md`, skills, Copilot instructions, `.claude/settings.json` permissions, `.vscode/tasks.json` and item template hints use `jex` commands.
+- The matrix test scaffolds with the jex under test and runs `jex check --ci`; CI installs jex from the nupkg built in the same run and checks `jex --version`.
+- The packaging project's version property is now `Version`; `dotnet pack Jex.CleanArchitecture.slnx -p:Version=x` produces both packages.
 
-### 移除
+### Removed
 
-- 仓库与生成项目的 `Taskfile.yml`；生成项目的 `DocumentationTests`（文档中的 jex 命令改由 `Jex.Cli.Tests` 用真实解析器校验）。
-- README 中的上游参考说明。
+- `Taskfile.yml` in the repository and in generated projects; `DocumentationTests` in generated projects (the jex commands in docs are now checked by `Jex.Cli.Tests` with the real parser).
+- The upstream reference note in the README.
 
 ## [2.0.0]
 
-全面重写。升级前请卸载旧版：`dotnet new uninstall Jex.CleanArchitecture.Template`。
+Complete rewrite. Uninstall the old version before upgrading: `dotnet new uninstall Jex.CleanArchitecture.Template`.
 
-### 新增
+### Added
 
-- 模板参数：`--database sqlite|postgresql|sqlserver|mysql`、`--use-aspire`、`--include-ai-docs`、`--include-docker`、`--http-port`、`--https-port`、`--skip-restore`。
-- Item templates：`jex-entity`、`jex-usecase`、`jex-endpoint`；生成即可通过 `task check`，重复运行拒绝覆盖。
-- 生成项目的 `AGENTS.md`、`CLAUDE.md`、`.claude/settings.json`、`/new-feature` 与 `/review-architecture` skills、Copilot 指令、`.mcp.json`、9 条 ADR、`Taskfile.yml`。
-- MediatR 管道：日志、未处理异常、授权（`[AuthorizeRequest]`）、校验、性能、工作单元；`ICommand` / `IQuery<T>`。
-- FreeSql 工作单元、只写脏列的仓储、审计字段、软删除（`DeletedToken` 保证仅活跃记录唯一）、领域事件。
-- DbUp 版本化迁移：`migrate`、`db-script` 命令（基于独立基准库生成脚本）。
-- Minimal API `IEndpointGroup`、统一信封（含 401/403/404/405/415/429/绑定失败）、Scalar、构建时 `openapi.json`、CORS、限流、健康检查。
-- ServiceDefaults（OpenTelemetry、服务发现、弹性）与可选 Aspire AppHost；Dockerfile 与 compose profiles。
-- 示例功能切片 TodoLists / TodoItems；单元、集成（含 Testcontainers）、架构测试。
-- 仓库：`templates/` 布局、`Taskfile.yml`、结构断言与矩阵脚本、可复用 CI 工作流、Trusted Publishing 发布。
+- Template parameters: `--database sqlite|postgresql|sqlserver|mysql`, `--use-aspire`, `--include-ai-docs`, `--include-docker`, `--http-port`, `--https-port`, `--skip-restore`.
+- Item templates: `jex-entity`, `jex-usecase`, `jex-endpoint`; their output passes `task check` straight away, and running them again refuses to overwrite.
+- In generated projects: `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, the `/new-feature` and `/review-architecture` skills, Copilot instructions, `.mcp.json`, 9 ADRs, `Taskfile.yml`.
+- MediatR pipeline: logging, unhandled exceptions, authorization (`[AuthorizeRequest]`), validation, performance, unit of work; `ICommand` / `IQuery<T>`.
+- FreeSql unit of work, repositories that write only dirty columns, audit fields, soft delete (`DeletedToken` keeps uniqueness among active rows only), domain events.
+- DbUp versioned migrations: `migrate` and `db-script` commands (scripts generated against a separate baseline database).
+- Minimal API `IEndpointGroup`, a uniform envelope (including 401/403/404/405/415/429/binding failures), Scalar, `openapi.json` at build time, CORS, rate limiting, health checks.
+- ServiceDefaults (OpenTelemetry, service discovery, resilience) and an optional Aspire AppHost; Dockerfile and compose profiles.
+- Sample feature slices TodoLists / TodoItems; unit, integration (including Testcontainers) and architecture tests.
+- Repository: `templates/` layout, `Taskfile.yml`, structure assertion and matrix scripts, reusable CI workflows, Trusted Publishing releases.
 
-### 变更
+### Changed
 
-- 校验从 Sannr 换为 FluentValidation；Controllers 换为 Minimal API；成功业务码从 `2000` 改为 `0`。
-- 测试迁移到 xunit.v3 + Microsoft.Testing.Platform 与 Shouldly。
-- 许可证统一为 MIT。
+- Validation moved from Sannr to FluentValidation; Controllers replaced by Minimal API; the success business code changed from `2000` to `0`.
+- Tests moved to xunit.v3 + Microsoft.Testing.Platform and Shouldly.
+- The license is MIT throughout.
 
-### 修复
+### Fixed
 
-- 改邮箱后无法登录（`NormalizedEmail` 未同步）；登录未检查锁定与用户状态。
-- 请求日志记录明文请求体（含密码）。
-- 首次 `dotnet run` 因 JWT 占位符直接抛异常。
-- 分页 `totalCount` 从未赋值；校验错误详情丢失。
-- 仓储更新覆盖全部列。
+- Users could not log in after changing their email (`NormalizedEmail` was not updated); login did not check lockout or user status.
+- Request logging recorded request bodies in plain text (including passwords).
+- The first `dotnet run` threw because of the JWT placeholder.
+- Paged `totalCount` was never set; validation error details were lost.
+- Repository updates overwrote every column.

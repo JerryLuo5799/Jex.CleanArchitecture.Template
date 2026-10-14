@@ -1,69 +1,71 @@
-# 脚手架（item templates）
+# Scaffolding (item templates)
 
-三个 item template 随解决方案模板一起安装，由 `jex scaffold` 调用：jex 在项目任意子目录都能运行，会切换到解决方案根目录，并从解决方案中的 `*.WebAPI` 项目推导出 `--solution-name`（项目前缀）。生成的代码立即可以通过 `jex check`；同名文件已存在时命令报错（退出码 73），不会覆盖。
+**English** | [简体中文](scaffolding.zh-CN.md)
 
-## 一键生成功能切片
+Three item templates are installed together with the solution template and are called by `jex scaffold`: jex runs from any subdirectory of the project, switches to the solution root and derives `--solution-name` (the project prefix) from the `*.WebAPI` project in the solution. The generated code passes `jex check` straight away; when a file with the same name already exists the command fails (exit code 73) and never overwrites it.
+
+## Generate a feature slice in one go
 
 ```bash
 jex scaffold feature Order Orders
 ```
 
-依次执行（任一步失败即停止）：
+Runs, in order (stopping at the first failing step):
 
-1. `jex-entity`：`Domain/Entities/Order.cs`（表 `orders`）、`IOrderRepository`、`OrderRepository`、`OrderConfiguration`、`Features/Orders/OrderDto.cs`、单测
-2. `jex-usecase` command：`Features/Orders/Commands/CreateOrder/CreateOrderCommand.cs`（+ Handler）、`CreateOrderCommandValidator.cs`、单测
-3. `jex-usecase` query：`Features/Orders/Queries/GetOrderById/GetOrderByIdQuery.cs`（+ Handler，`long Id`）、单测
-4. `jex-endpoint`：`WebAPI/Endpoints/Orders.cs`（`/api/orders`，映射 `GetOrderById`、`CreateOrder`）、集成测试
+1. `jex-entity`: `Domain/Entities/Order.cs` (table `orders`), `IOrderRepository`, `OrderRepository`, `OrderConfiguration`, `Features/Orders/OrderDto.cs`, unit test
+2. `jex-usecase` command: `Features/Orders/Commands/CreateOrder/CreateOrderCommand.cs` (+ Handler), `CreateOrderCommandValidator.cs`, unit test
+3. `jex-usecase` query: `Features/Orders/Queries/GetOrderById/GetOrderByIdQuery.cs` (+ Handler, `long Id`), unit test
+4. `jex-endpoint`: `WebAPI/Endpoints/Orders.cs` (`/api/orders`, mapping `GetOrderById` and `CreateOrder`), integration test
 
-之后填充实体属性、Handler 逻辑与校验规则，再 `jex db script add-orders`。
+Then fill in the entity properties, handler logic and validation rules, and run `jex db script add-orders`.
 
-## 单独使用
+## One piece at a time
 
-| jex 命令 | 等价命令（在解决方案根目录） |
+| jex command | Equivalent command (at the solution root) |
 |---|---|
 | `jex scaffold entity Order Orders` | `dotnet new jex-entity -n Order --plural Orders --solution-name Acme -o .` |
 | `jex scaffold usecase CancelOrder Orders --with-id` | `dotnet new jex-usecase -n CancelOrder --feature Orders --usecase-type command --return-type Unit --with-id --solution-name Acme -o .` |
 | `jex scaffold usecase GetOrdersWithPagination Orders --type query --return OrderDto --paged` | `dotnet new jex-usecase -n GetOrdersWithPagination --feature Orders --usecase-type query --return-type OrderDto --paged --solution-name Acme -o .` |
 | `jex scaffold usecase GetOrders Orders --type query --return "List<OrderDto>"` | `dotnet new jex-usecase -n GetOrders --feature Orders --usecase-type query --return-type "List<OrderDto>" --solution-name Acme -o .` |
-| `jex scaffold endpoint Reports` | `dotnet new jex-endpoint -n Reports --solution-name Acme -o .`（空端点组） |
+| `jex scaffold endpoint Reports` | `dotnet new jex-endpoint -n Reports --solution-name Acme -o .` (empty endpoint group) |
 
-### `jex scaffold` 的通用选项
+### Common options of `jex scaffold`
 
-| 选项 | 说明 |
+| Option | Description |
 |---|---|
-| `--no-test` | 不生成测试（item template 的 `--include-test false`） |
-| `--solution-name <Prefix>` | 指定项目前缀，跳过推导（例如 `*.WebAPI` 项目改过名） |
-| `--api-project <path>` | 指定 Web API 项目（解决方案里有多个或没有 `*.WebAPI.csproj` 时） |
-| `--template-version <版本>` | 按这个版本核对已安装的模板，代替 `jex.json` 的 `templateVersion` |
-| `--force` | 跳过模板版本核对 |
+| `--no-test` | Do not generate tests (`--include-test false` of the item template) |
+| `--solution-name <Prefix>` | Set the project prefix and skip the derivation (for example when the `*.WebAPI` project was renamed) |
+| `--api-project <path>` | Set the Web API project (when the solution has several or no `*.WebAPI.csproj`) |
+| `--template-version <version>` | Check the installed templates against this version instead of `templateVersion` in `jex.json` |
+| `--force` | Skip the template version check |
 
-`jex scaffold` 从不安装或升级模板包（`dotnet new install` 每台机器只保留一个版本，会影响所有项目）。`jex.json` 的版本与已安装模板主版本不同时报错并给出两条出路；同一主版本内的差异只警告。
+`jex scaffold` never installs or upgrades the template package (`dotnet new install` keeps only one version per machine, which affects every project). When the version in `jex.json` and the installed templates differ in major version it fails and offers two ways out; differences within the same major version only produce a warning.
 
-### `jex-usecase` 参数
+### `jex-usecase` options
 
-| 参数 | jex 选项 | 默认 | 说明 |
+| Option | jex option | Default | Description |
 |---|---|---|---|
-| `--feature` / `-f` | 第二个位置参数 | 必填 | 功能目录（复数），与实体的 `--plural` 一致时可直接使用 `{Entity}Dto` |
-| `--usecase-type` / `-ut` | `--type` | `command` | `command` 生成 Handler + Validator；`query` 生成 Handler |
-| `--return-type` / `-rt` | `--return` | `Unit` | 结果类型；`Unit` 表示无返回（仅命令） |
-| `--with-id` / `-id` | `--with-id` | `false` | 请求带 `long Id` 参数 |
-| `--paged` / `-pg` | `--paged` | `false` | 仅查询：继承 `PagedQuery`，返回 `PagedData<ReturnType>`，并生成 `PagedQueryValidator` |
-| `--include-test` / `-it` | `--no-test` | `true` | 生成单元测试 |
+| `--feature` / `-f` | second positional argument | required | Feature folder (plural); when it matches the entity's `--plural`, `{Entity}Dto` can be used directly |
+| `--usecase-type` / `-ut` | `--type` | `command` | `command` generates Handler + Validator; `query` generates a Handler |
+| `--return-type` / `-rt` | `--return` | `Unit` | Result type; `Unit` means no result (commands only) |
+| `--with-id` / `-id` | `--with-id` | `false` | The request has a `long Id` parameter |
+| `--paged` / `-pg` | `--paged` | `false` | Queries only: inherits `PagedQuery`, returns `PagedData<ReturnType>` and generates a `PagedQueryValidator` |
+| `--include-test` / `-it` | `--no-test` | `true` | Generate a unit test |
 
-### `jex-entity` 参数
+### `jex-entity` options
 
-| 参数 | jex 选项 | 默认 | 说明 |
+| Option | jex option | Default | Description |
 |---|---|---|---|
-| `--plural` / `-p` | 第二个位置参数 | 必填 | 功能目录与表名（`OrderLines` → `order_lines`） |
-| `--include-test` / `-it` | `--no-test` | `true` | 生成单元测试 |
+| `--plural` / `-p` | second positional argument | required | Feature folder and table name (`OrderLines` → `order_lines`) |
+| `--include-test` / `-it` | `--no-test` | `true` | Generate a unit test |
 
-### `jex-endpoint` 参数
+### `jex-endpoint` options
 
-| 参数 | jex 选项 | 默认 | 说明 |
+| Option | jex option | Default | Description |
 |---|---|---|---|
-| `--entity` / `-e` | `--entity` | 空 | 指定后映射 `Create{Entity}` 与 `Get{Entity}ById`，并生成集成测试（需先生成这两个用例） |
-| `--include-test` / `-it` | `--no-test` | `true` | 生成集成测试（需要 `--entity`） |
+| `--entity` / `-e` | `--entity` | empty | When set, maps `Create{Entity}` and `Get{Entity}ById` and generates an integration test (generate those two use cases first) |
+| `--include-test` / `-it` | `--no-test` | `true` | Generate an integration test (requires `--entity`) |
 
-## 为什么在解决方案根目录运行
+## Why run from the solution root
 
-一次调用需要同时写入 `src/` 下多个项目和 `tests/`，因此不能依赖 `msbuild:RootNamespace` 绑定（只在单个项目目录内有效）。见 [ADR-0003](decisions/ADR-0003-item-templates-from-solution-root.md)。
+One call writes into several projects under `src/` and into `tests/`, so it cannot rely on the `msbuild:RootNamespace` binding (which only works inside a single project directory). See [ADR-0003](decisions/ADR-0003-item-templates-from-solution-root.md).
