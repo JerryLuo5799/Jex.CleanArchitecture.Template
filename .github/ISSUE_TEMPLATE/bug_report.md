@@ -1,17 +1,17 @@
 ---
 name: Bug report
-about: 生成的项目或模板本身有问题
+about: Something is wrong with a generated project or the template itself / 生成的项目或模板本身有问题
 labels: bug
 ---
 
-**模板版本**：`dotnet new details Jex.CleanArchitecture.Template` 的输出
+**Template version / 模板版本**: output of / 输出 `dotnet new details Jex.CleanArchitecture.Template`
 
-**生成命令**：例如 `dotnet new jex -n Acme --database postgresql --use-aspire`
+**Generation command / 生成命令**: e.g. / 例如 `dotnet new jex -n Acme --database postgresql --use-aspire`
 
-**.NET SDK**：`dotnet --version`
+**.NET SDK**: `dotnet --version`
 
-**现象**：
+**What happened / 现象**:
 
-**期望**：
+**Expected / 期望**:
 
-**复现步骤 / 日志**：
+**Steps to reproduce / logs / 复现步骤 / 日志**:

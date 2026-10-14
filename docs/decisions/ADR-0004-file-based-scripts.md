@@ -1,18 +1,20 @@
-# ADR-0004 仓库脚本使用 .NET 10 file-based app
+# ADR-0004 Repository scripts are .NET 10 file-based apps
 
-- 状态：已采纳
-- 日期：2026-10-12
+**English** | [简体中文](ADR-0004-file-based-scripts.zh-CN.md)
 
-## 决策
+- Status: Accepted
+- Date: 2026-10-12
 
-结构断言（`scripts/assert-structure.cs`）与矩阵测试（`scripts/test-template-matrix.cs`）写成单文件 C# 程序，用 `dotnet run --file <script>.cs` 运行。
+## Decision
 
-- 一份代码在 Windows / Linux / macOS 上行为一致，不再维护 `.ps1` + `.sh` 两份。
-- 只依赖 .NET SDK，CI 与本地相同。
-- 仓库根目录有 `Jex.CleanArchitecture.Template.csproj`，因此必须显式写 `--file`，否则 `dotnet run` 会把脚本当作该项目的参数。
+The structure assertions (`scripts/assert-structure.cs`) and the matrix test (`scripts/test-template-matrix.cs`) are single-file C# programs run with `dotnet run --file <script>.cs`.
 
-## 后果
+- One piece of code behaves the same on Windows / Linux / macOS, instead of maintaining both `.ps1` and `.sh` copies.
+- They depend only on the .NET SDK, so CI and local runs are the same.
+- The repository root contains `Jex.CleanArchitecture.Template.csproj`, so `--file` must be given explicitly; otherwise `dotnet run` treats the script as an argument to that project.
 
-脚本里的进程调用用 `ProcessStartInfo.ArgumentList`，路径含空格时无需手工转义；矩阵用例的输出目录故意包含空格。
+## Consequences
 
-两个脚本由 `jex dev new` / `jex dev matrix` 包装调用（[ADR-0005](ADR-0005-jex-cli.md)），保留为独立脚本而不移植进 CLI。
+Process calls in the scripts use `ProcessStartInfo.ArgumentList`, so paths with spaces need no manual escaping; the matrix output directories deliberately contain spaces.
+
+Both scripts are wrapped by `jex dev new` / `jex dev matrix` ([ADR-0005](ADR-0005-jex-cli.md)) and stay as standalone scripts instead of being ported into the CLI.

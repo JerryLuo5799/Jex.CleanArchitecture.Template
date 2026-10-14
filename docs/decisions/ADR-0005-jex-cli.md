@@ -1,30 +1,32 @@
-# ADR-0005 用 jex 命令行工具取代 Taskfile
+# ADR-0005 Replace Taskfile with the jex command-line tool
 
-- 状态：已采纳（取代 [ADR-0002](ADR-0002-taskfile.md)）
-- 日期：2026-10-12
+**English** | [简体中文](ADR-0005-jex-cli.zh-CN.md)
 
-## 背景
+- Status: Accepted (supersedes [ADR-0002](ADR-0002-taskfile.md))
+- Date: 2026-10-12
 
-仓库与生成项目都依赖 go-task：用户要额外安装第三方工具，生成项目的 Taskfile 用模板占位符写死了解决方案名、API 路径和数据库 profile，改名或换数据库后就与项目不一致。
+## Context
 
-## 决策
+Both the repository and generated projects depended on go-task: users had to install an extra third-party tool, and the generated project's Taskfile hard-coded the solution name, API path and database profile through template placeholders, so it no longer matched the project after a rename or a database change.
 
-- 新增 .NET 全局工具 **`Jex.Cli`**（命令名 `jex`，`src/Jex.Cli`），与模板包同版本、同一个 tag 发布。生成项目的命令（`jex check`、`jex scaffold …`、`jex db …`、`jex infra …`）与仓库开发任务（`jex dev …`）都走它；仓库与生成项目都删除 `Taskfile.yml`。
-- **项目识别用清单**（与 Angular、Aspire CLI、ABP Studio 相同）：生成项目根目录有 `jex.json`，jex 从当前目录向上查找。清单只记录不会漂移的事实：标记与**生成时的模板版本**（打包时由 `StampJexManifest` 写入包版本，源文件固定为 `0.0.0-dev`）。解决方案、API / AppHost / 测试项目从 `*.slnx` 的项目引用推导，数据库 profile 只在 `jex infra` 需要时从 `appsettings.json` 推导；改名后跟随 slnx 的项目引用，推导不出时报错并提示 `--api-project` / `--solution-name`。
-- **两套版本策略**：`dotnet new install` 每台机器只保留一个版本，所以只有 `jex new` 会安装或切换模板包（目标为 `--template-version`，缺省为 CLI 版本）；`jex scaffold` 从不安装，只核对 `jex.json` 的版本与已安装模板的主版本，不一致时报错并给出切换命令或 `--force`。
-- 命令只拼参数、交给不经 shell 的进程执行器（`ProcessStartInfo.ArgumentList`）；文件系统操作用 C#。多步命令任一步失败即停止并返回该步的退出码。
-- `jex dev check` / `jex dev new <Name> --check` 在当前进程内复用 `check` 的实现；矩阵脚本是独立进程，通过 `--jex <exe>` 与 `--jex-arg <arg>` 显式接收被测 CLI，不从 PATH 查找。
-- 结构断言与矩阵脚本保留为 file-based app（[ADR-0004](ADR-0004-file-based-scripts.md)），由 `jex dev` 包装。
+## Decision
 
-## 备选
+- Add a .NET global tool **`Jex.Cli`** (command name `jex`, `src/Jex.Cli`), released with the same version and the same tag as the template package. The generated project's commands (`jex check`, `jex scaffold …`, `jex db …`, `jex infra …`) and the repository's dev tasks (`jex dev …`) all go through it; `Taskfile.yml` is removed from both the repository and generated projects.
+- **Projects are identified by a manifest** (as in Angular, the Aspire CLI and ABP Studio): the root of a generated project has a `jex.json`, and jex searches upward from the current directory. The manifest only records facts that cannot drift: the marker and the **template version at generation time** (`StampJexManifest` writes the package version at pack time; the source file stays at `0.0.0-dev`). The solution and the API / AppHost / test projects are derived from the project references in `*.slnx`, and the database profile is derived from `appsettings.json` only when `jex infra` needs it. After a rename, jex follows the slnx project references; when it cannot derive something it fails and suggests `--api-project` / `--solution-name`.
+- **Two version policies**: `dotnet new install` keeps only one version per machine, so only `jex new` installs or switches the template package (target: `--template-version`, defaulting to the CLI version). `jex scaffold` never installs; it only compares the major version in `jex.json` with the installed templates, and when they differ it fails with the command to switch or `--force`.
+- Commands only build arguments and hand them to a process runner that bypasses the shell (`ProcessStartInfo.ArgumentList`); file system work is done in C#. A multi-step command stops at the first failing step and returns that step's exit code.
+- `jex dev check` / `jex dev new <Name> --check` reuse the `check` implementation in the current process; the matrix script is a separate process that receives the CLI under test explicitly through `--jex <exe>` and `--jex-arg <arg>` and never looks it up on PATH.
+- The structure assertion and matrix scripts stay file-based apps ([ADR-0004](ADR-0004-file-based-scripts.md)), wrapped by `jex dev`.
 
-- 继续用 go-task：额外依赖，Taskfile 与项目会漂移。
-- `dotnet` 本地工具清单（`.config/dotnet-tools.json`）：生成项目还没有包源时无法 restore，也无法引用未发布的版本；全局工具与用户的使用方式一致。
-- 在 jex.json 中记录解决方案名、项目路径：信息会随重构失效。
+## Alternatives
 
-## 后果
+- Keep go-task: an extra dependency, and the Taskfile drifts away from the project.
+- A `dotnet` local tool manifest (`.config/dotnet-tools.json`): a generated project cannot restore it before it has a package source, and it cannot reference an unpublished version; a global tool matches how users already work.
+- Record the solution name and project paths in jex.json: that information goes stale with refactoring.
 
-- 用户只需 `dotnet tool install -g Jex.Cli`；没装 jex 的环境仍可按 `AGENTS.md` §10 用原生命令工作。
-- 模板源码里的工具包名写成占位符 `TPLTOOL`（生成时还原为 `Jex.Cli`），否则 `NameSafe` 会把 `Jex.Cli` 改名为 `<项目名>.Cli`。
-- 发布 job 推送两个包；首次发布前需确认 nuget.org 的 Trusted Publishing 策略允许创建 `Jex.Cli`。
-- jex 之前生成的项目可在根目录运行 `jex init` 补 `jex.json`（版本未知，脚手架需要 `--template-version` 或 `--force`）。
+## Consequences
+
+- Users only need `dotnet tool install -g Jex.Cli`; environments without jex can still work with the native commands in section 10 of `AGENTS.md`.
+- The tool package name is written as the placeholder `TPLTOOL` in the template source (restored to `Jex.Cli` on generation); otherwise `NameSafe` would rename `Jex.Cli` to `<project name>.Cli`.
+- The publish job pushes two packages; before the first release, make sure the Trusted Publishing policy on nuget.org allows creating `Jex.Cli`.
+- Projects generated before jex existed can run `jex init` at the root to add a `jex.json` (the version is unknown, so scaffolding needs `--template-version` or `--force`).

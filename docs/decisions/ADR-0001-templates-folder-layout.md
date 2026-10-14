@@ -1,21 +1,23 @@
-# ADR-0001 templates/ 目录布局
+# ADR-0001 The templates/ folder layout
 
-- 状态：已采纳
-- 日期：2026-10-12
+**English** | [简体中文](ADR-0001-templates-folder-layout.zh-CN.md)
 
-## 背景
+- Status: Accepted
+- Date: 2026-10-12
 
-旧布局把模板内容（src、tests、slnx）和打包项目放在仓库根目录：模板自己的 README 被打进生成项目，`.github`、`.gitignore` 等点文件没有打包，`sourceName` 还会改写仓库级文件名。
+## Context
 
-## 决策
+The old layout kept the template content (src, tests, slnx) and the packaging project at the repository root: the template's own README was packed into generated projects, dot files such as `.github` and `.gitignore` were not packed, and `sourceName` also rewrote repository-level file names.
 
-- 仓库根目录只放工具链：打包项目、`jex` 命令行工具（`src/`）、脚本、CI、仓库文档。
-- `templates/solution/` 是解决方案模板，本身是可构建、可测试的解决方案；它的 `README.md` 就是生成项目的 README。
-- `templates/items/{entity,usecase,endpoint}/` 是 item templates。
-- 打包项目以 `templates/**` 为内容，`NoDefaultExcludes=true` 保留点文件；一个 nupkg 包含 4 个模板。
-- 开发时 `dotnet new install ./templates` 按目录安装全部模板（`jex dev install`）；发布验收走 nupkg（`jex dev install --from-package`、CI 矩阵）。
+## Decision
 
-## 后果
+- The repository root holds only tooling: the packaging project, the `jex` command-line tool (`src/`), scripts, CI and repository docs.
+- `templates/solution/` is the solution template and is itself a buildable, testable solution; its `README.md` is the README of the generated project.
+- `templates/items/{entity,usecase,endpoint}/` are the item templates.
+- The packaging project uses `templates/**` as content, with `NoDefaultExcludes=true` to keep dot files; one nupkg contains the 4 templates.
+- During development `dotnet new install ./templates` installs all templates from the folder (`jex dev install`); release acceptance goes through the nupkg (`jex dev install --from-package`, the CI matrix).
 
-- 模板源码的改动可以直接 `jex dev check --ci`，生成结果由矩阵验证。
-- 卸载：目录安装按路径（`dotnet new uninstall ./templates`），包安装按 PackageId。
+## Consequences
+
+- Changes to the template source can be checked directly with `jex dev check --ci`; the generated output is verified by the matrix.
+- Uninstalling: a folder install is removed by path (`dotnet new uninstall ./templates`), a package install by PackageId.

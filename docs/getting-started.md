@@ -1,27 +1,29 @@
-# 快速上手
+# Getting started
 
-## 前置条件
+**English** | [简体中文](getting-started.zh-CN.md)
 
-- .NET 10 SDK（`dotnet --version` ≥ 10.0.100）
-- 可选：Docker（非 SQLite 数据库的本地容器、`TEST_DATABASE=provider` 集成测试、镜像构建）
+## Prerequisites
 
-## 1. 安装 jex
+- .NET 10 SDK (`dotnet --version` ≥ 10.0.100)
+- Optional: Docker (local containers for databases other than SQLite, `TEST_DATABASE=provider` integration tests, image builds)
+
+## 1. Install jex
 
 ```bash
 dotnet tool install -g Jex.Cli
 jex --version
 ```
 
-`jex` 是本模板的命令行工具。所有 `jex` 命令都有等价的 `dotnet` 命令（生成项目的 `AGENTS.md` §10），不装 jex 也能开发。
+`jex` is this template's command-line tool. Every `jex` command has an equivalent `dotnet` command (section 10 of the generated project's `AGENTS.md`), so you can develop without jex.
 
-## 2. 生成项目
+## 2. Generate a project
 
 ```bash
 jex new Acme.Shop
 cd Acme.Shop
 ```
 
-`jex new` 会先确保本机装有与 jex 同版本的模板包（`dotnet new install Jex.CleanArchitecture.Template@<版本>`），再运行 `dotnet new jex -n Acme.Shop`。不用 jex 时：
+`jex new` first makes sure the template package with the same version as jex is installed (`dotnet new install Jex.CleanArchitecture.Template@<version>`), then runs `dotnet new jex -n Acme.Shop`. Without jex:
 
 ```bash
 dotnet new install Jex.CleanArchitecture.Template
@@ -29,39 +31,39 @@ dotnet new list jex      # jex / jex-entity / jex-usecase / jex-endpoint
 dotnet new jex -n Acme.Shop
 ```
 
-生成的项目根目录有 `jex.json`（jex 的项目标记，记录生成时的模板版本），请一起提交。
+The root of the generated project contains `jex.json` (the jex project marker, recording the template version it was generated with). Commit it along with the rest.
 
-## 3. 运行
+## 3. Run
 
 ```bash
-jex check      # 验收：格式化 + 构建 + 测试
-jex run        # 启动；浏览器打开 /scalar
+jex check      # acceptance: format + build + test
+jex run        # start; open /scalar in the browser
 ```
 
-Development 环境会自动建表并种子化 `admin@example.com / Admin123!`。用 `src/Acme.Shop.WebAPI/Acme.Shop.WebAPI.http` 登录后调用接口。
+In Development the tables are created automatically and `admin@example.com / Admin123!` is seeded. Log in with `src/Acme.Shop.WebAPI/Acme.Shop.WebAPI.http` and then call the endpoints.
 
-非 SQLite 数据库先启动容器：`jex infra up`（或 `--use-aspire` 生成后用 `jex run --aspire`）。
+For databases other than SQLite, start the container first: `jex infra up` (or, when generated with `--use-aspire`, use `jex run --aspire`).
 
-## 4. 开始用 AI 开发
+## 4. Start developing with AI
 
-用 Claude Code / Copilot / Cursor 打开项目目录，它们会读取 `AGENTS.md`。例如在 Claude Code 里：
+Open the project directory in Claude Code / Copilot / Cursor; they read `AGENTS.md`. For example, in Claude Code:
 
 ```
-/new-feature Order Orders 含 CustomerName(必填,≤100)、Total(decimal>0)
+/new-feature Order Orders with CustomerName (required, ≤100), Total (decimal > 0)
 ```
 
-它会按 `AGENTS.md` 的流程运行脚手架、填充代码、补测试、生成迁移脚本并跑 `jex check`。详见 [ai-agents.md](ai-agents.md)。
+Following the workflow in `AGENTS.md`, it runs the scaffolding, fills in the code, adds tests, generates a migration script and runs `jex check`. See [ai-agents.md](ai-agents.md).
 
-## 5. 上线前
+## 5. Before going to production
 
-- 设置 `Jwt:Secret`（≥ 32 字符）等密钥：环境变量或 `dotnet user-secrets`，不要写进 `appsettings.json`。
-- 生产 `Database:AutoSyncStructure=false`；用 `jex db script initial` 生成初始迁移并提交，部署流水线运行 `dotnet <App>.WebAPI.dll migrate`。
-- 配置 `Cors:AllowedOrigins`、限流阈值；需要初始管理员时临时开启 `Seed:Admin:Enabled` 并通过环境变量提供凭据。
+- Set secrets such as `Jwt:Secret` (≥ 32 characters) through environment variables or `dotnet user-secrets`; never put them in `appsettings.json`.
+- In production set `Database:AutoSyncStructure=false`; generate the initial migration with `jex db script initial` and commit it, and have the deployment pipeline run `dotnet <App>.WebAPI.dll migrate`.
+- Configure `Cors:AllowedOrigins` and the rate limits. If you need an initial administrator, temporarily enable `Seed:Admin:Enabled` and supply the credentials through environment variables.
 
-## 升级 jex 与模板
+## Upgrading jex and the templates
 
 ```bash
 dotnet tool update -g Jex.Cli
 ```
 
-之后的 `jex new` 会自动切换到同版本的模板包。已有项目里的 `jex scaffold` 不会安装或升级模板：它核对 `jex.json` 的模板版本与本机已安装的模板，主版本不同时拒绝执行，并提示 `dotnet new install Jex.CleanArchitecture.Template@<版本> --force`（切换本机模板）或 `--force`（用已安装的模板继续）。
+The next `jex new` switches to the template package of the same version automatically. `jex scaffold` in an existing project never installs or upgrades templates: it compares the template version in `jex.json` with the templates installed on the machine, refuses to run when the major versions differ, and suggests `dotnet new install Jex.CleanArchitecture.Template@<version> --force` (switch the machine's templates) or `--force` (continue with the installed templates).

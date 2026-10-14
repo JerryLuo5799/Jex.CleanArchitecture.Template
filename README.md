@@ -91,8 +91,6 @@ Repository layout, placeholder rules, the jex dev loop and the release process a
 
 ## Documentation
 
-The documents below are written in Chinese.
-
 - [Getting started](docs/getting-started.md)
 - [Template parameters](docs/template-parameters.md)
 - [Scaffolding](docs/scaffolding.md)

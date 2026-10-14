@@ -1,4 +1,6 @@
-# Tag v1.2.3 -> strict check + pack 1.2.3 (template + Jex.Cli) -> full template matrix -> publish those exact nupkgs.
+# Manual release: Actions -> release -> Run workflow on main with version 1.2.3 -> strict check + pack 1.2.3
+# (template + Jex.Cli) -> full template matrix -> publish those exact nupkgs -> tag v1.2.3 on the built commit and
+# create the GitHub release. Merging to main never publishes anything (pushes only run pipeline.yml).
 # NuGet uses Trusted Publishing (OIDC): configure a trusted publishing policy for this repository and
 # workflow on nuget.org and set the NUGET_USER repository variable to the nuget.org account name. The policy
 # must cover both package ids, Jex.CleanArchitecture.Template and Jex.Cli (check this before the first release
@@ -6,8 +8,16 @@
 name: release
 
 on:
-  push:
-    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version without the v prefix (e.g. 3.0.2 or 3.1.0-rc.1)'
+        required: true
+        type: string
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -17,17 +27,31 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.parse.outputs.version }}
+      tag: ${{ steps.parse.outputs.tag }}
     steps:
+      - uses: actions/checkout@v4
+
       - id: parse
-        name: Tag -> package version
+        name: Validate version, branch and tag
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${INPUT_VERSION#v}"
           if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-            echo "::error::Tag '$GITHUB_REF_NAME' is not v<semver> (e.g. v2.0.0 or v2.1.0-rc.1)."
+            echo "::error::'$INPUT_VERSION' is not a semantic version (e.g. 2.0.0 or 2.1.0-rc.1)."
+            exit 1
+          fi
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Releases run from main only (this run is on $GITHUB_REF)."
+            exit 1
+          fi
+          if [[ -n "$(git ls-remote --tags origin "refs/tags/v$version")" ]]; then
+            echo "::error::Tag v$version already exists."
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
   ci:
     needs: version
@@ -83,8 +107,10 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.version.outputs.tag }}
         run: |
           # Pre-release versions (3.0.0-rc.1) must not become the repository's "Latest" release.
           flags=""
           if [[ "${{ needs.version.outputs.version }}" == *-* ]]; then flags="--prerelease --latest=false"; fi
-          gh release create "$GITHUB_REF_NAME" nupkg/*.nupkg --title "$GITHUB_REF_NAME" --generate-notes --verify-tag $flags
+          # Creates the tag on the exact commit that was built and verified.
+          gh release create "$TAG" nupkg/*.nupkg --title "$TAG" --target "$GITHUB_SHA" --generate-notes $flags
