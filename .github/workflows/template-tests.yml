@@ -40,7 +40,7 @@ jobs:
       # Docker daemon fails the job instead of silently falling back to SQLite.
       TEST_DATABASE: ${{ matrix.test-database }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v4
         with:
