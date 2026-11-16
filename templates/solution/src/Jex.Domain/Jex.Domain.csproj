@@ -2,6 +2,9 @@
 
   <ItemGroup>
     <!-- Only the Identity entity base types (IdentityUser/IdentityRole); no ASP.NET Core framework reference. -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
     <PackageReference Include="MediatR.Contracts" />
   </ItemGroup>
